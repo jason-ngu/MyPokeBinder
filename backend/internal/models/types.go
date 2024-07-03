@@ -1,10 +1,10 @@
 package models
 
-type Types struct {
+type TypesEntity struct {
 	TypeID   int    `json:"type_id"`
 	TypeName string `json:"type_name"`
 }
 
-type TypesRepository interface {
-	SearchTypes() *Types
+type TypesModel struct {
+	TypeName string
 }

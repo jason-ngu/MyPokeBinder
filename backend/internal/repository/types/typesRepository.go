@@ -1,0 +1,43 @@
+package typesRepository
+
+// https://gist.github.com/alexedwards/d42ae90aac9dfa75046ebf8a036b080b
+// https://www.alexedwards.net/blog/organising-database-access
+
+import (
+	"backend/internal/models"
+	"database/sql"
+)
+
+func GetAllTypes(db *sql.DB) []models.TypesModel {
+	rows, err := db.Query("SELECT * FROM types")
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	var types []models.TypesModel
+
+	for rows.Next() {
+		var t models.TypesModel
+
+		err := rows.Scan(&t.TypeName)
+		if err != nil {
+			return nil
+		}
+
+		types = append(types, t)
+	}
+	if err = rows.Err(); err != nil {
+		return nil
+	}
+
+	return types
+}
+
+// func getTypeById(id int) Types {
+
+// }
+
+// func createType(typeName string) {
+
+// }
