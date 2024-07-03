@@ -7,7 +7,7 @@ CREATE TABLE types(
 
 CREATE TABLE subtypes(
     subtype_id      SERIAL PRIMARY KEY,
-    subtype_name    VARCHAR(20) UNIQUE NOT NULL
+    subtype_name    VARCHAR(50) UNIQUE NOT NULL
 );
 
 CREATE TABLE supertypes(
@@ -17,7 +17,7 @@ CREATE TABLE supertypes(
 
 CREATE TABLE rarities(
     rarity_id       SERIAL PRIMARY KEY,
-    rarity_name     VARCHAR(20) UNIQUE NOT NULL
+    rarity_name     VARCHAR(50) UNIQUE NOT NULL
 );
 
 CREATE TABLE series(
