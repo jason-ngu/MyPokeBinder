@@ -10,9 +10,12 @@ type Types struct {
 	TypeName string
 }
 
-func GetAllTypes(env *internal.Env) []models.TypesModel {
-	allTypes := typesRepository.GetAllTypes(env.DB)
-	return allTypes
+func GetAllTypes(env *internal.Env) ([]models.TypesModel, error) {
+	allTypes, err := typesRepository.GetAllTypes(env.DB)
+	if err != nil {
+		return nil, err
+	}
+	return allTypes, nil
 }
 
 // func getTypeById(id int) Types {

@@ -30,7 +30,10 @@ func Datasync() {
 	}
 	env := &internal.Env{DB: db}
 
-	allTypes := typesService.GetAllTypes(env)
+	allTypes, err := typesService.GetAllTypes(env)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	fmt.Println(allTypes)
 }

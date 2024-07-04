@@ -8,10 +8,10 @@ import (
 	"database/sql"
 )
 
-func GetAllTypes(db *sql.DB) []models.TypesModel {
+func GetAllTypes(db *sql.DB) ([]models.TypesModel, error) {
 	rows, err := db.Query("SELECT * FROM public.types")
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -22,16 +22,16 @@ func GetAllTypes(db *sql.DB) []models.TypesModel {
 
 		err := rows.Scan(&t.TypeID, &t.TypeName)
 		if err != nil {
-			return nil
+			return nil, err
 		}
 
 		types = append(types, models.TypesModel{TypeName: t.TypeName})
 	}
 	if err = rows.Err(); err != nil {
-		return nil
+		return nil, err
 	}
 
-	return types
+	return types, nil
 }
 
 // func getTypeById(id int) Types {
