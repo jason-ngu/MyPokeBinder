@@ -9,7 +9,7 @@ import (
 )
 
 func GetAllTypes(db *sql.DB) []models.TypesModel {
-	rows, err := db.Query("SELECT * FROM types")
+	rows, err := db.Query("SELECT * FROM public.types")
 	if err != nil {
 		return nil
 	}
@@ -18,14 +18,14 @@ func GetAllTypes(db *sql.DB) []models.TypesModel {
 	var types []models.TypesModel
 
 	for rows.Next() {
-		var t models.TypesModel
+		var t models.TypesEntity
 
-		err := rows.Scan(&t.TypeName)
+		err := rows.Scan(&t.TypeID, &t.TypeName)
 		if err != nil {
 			return nil
 		}
 
-		types = append(types, t)
+		types = append(types, models.TypesModel{TypeName: t.TypeName})
 	}
 	if err = rows.Err(); err != nil {
 		return nil

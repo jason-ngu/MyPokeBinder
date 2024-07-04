@@ -1,11 +1,13 @@
-package dataSync
+package datasync
 
 import (
-	"backend/internal/services"
+	internal "backend/internal"
 	typesService "backend/internal/services/types"
 	"database/sql"
 	"fmt"
 	"log"
+
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -17,7 +19,7 @@ const (
 	tcgApiKey = "8c07ea97-a973-43ac-92a9-45d27980d6c6"
 )
 
-func DataSync() {
+func Datasync() {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -26,7 +28,7 @@ func DataSync() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	env := &services.Env{DB: db}
+	env := &internal.Env{DB: db}
 
 	allTypes := typesService.GetAllTypes(env)
 
