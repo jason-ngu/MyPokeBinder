@@ -10,7 +10,7 @@ type Types struct {
 	TypeName string
 }
 
-func GetAllTypes(env *internal.Env) ([]models.TypesModel, error) {
+func GetAllTypes(env *internal.Env) ([]models.TypeModel, error) {
 	allTypes, err := typesRepository.GetAllTypes(env.DB)
 	if err != nil {
 		return nil, err

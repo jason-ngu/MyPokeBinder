@@ -8,24 +8,24 @@ import (
 	"database/sql"
 )
 
-func GetAllTypes(db *sql.DB) ([]models.TypesModel, error) {
+func GetAllTypes(db *sql.DB) ([]models.TypeModel, error) {
 	rows, err := db.Query("SELECT * FROM public.types")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var types []models.TypesModel
+	var types []models.TypeModel
 
 	for rows.Next() {
-		var t models.TypesEntity
+		var t models.TypeEntity
 
 		err := rows.Scan(&t.TypeID, &t.TypeName)
 		if err != nil {
 			return nil, err
 		}
 
-		types = append(types, models.TypesModel{TypeName: t.TypeName})
+		types = append(types, models.TypeModel{TypeName: t.TypeName})
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
