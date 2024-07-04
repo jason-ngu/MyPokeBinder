@@ -45,8 +45,8 @@ CREATE TABLE collections(
 
 CREATE TABLE sets(
     set_id              SERIAL PRIMARY KEY,
-    api_id              INTEGER NOT NULL,
-    set_name            text NOT NULL,
+    api_id              TEXT NOT NULL,
+    set_name            TEXT NOT NULL,
     series_id           INTEGER NOT NULL REFERENCES series(series_id),
     ptcgo_code          VARCHAR(5),
     card_total          INTEGER NOT NULL,
@@ -60,8 +60,8 @@ CREATE TABLE sets(
 
 CREATE TABLE cards(
     card_id             SERIAL PRIMARY KEY,
-    api_id              INTEGER NOT NULL,
-    card_name           text NOT NULL,
+    api_id              TEXT NOT NULL,
+    card_name           TEXT NOT NULL,
     set_id              INTEGER NOT NULL REFERENCES sets(set_id),
     supertype_id        INTEGER NOT NULL REFERENCES supertypes(supertype_id),
     rarity_id           INTEGER NOT NULL REFERENCES rarities(rarity_id),
