@@ -5,7 +5,7 @@ import (
 	"database/sql"
 )
 
-func GetAllSubTypes(db *sql.DB) ([]models.SubtypeModel, error) {
+func GetAllSubtypes(db *sql.DB) ([]models.SubtypeModel, error) {
 	rows, err := db.Query("SELECT * FROM public.subtypes")
 	if err != nil {
 		return nil, err

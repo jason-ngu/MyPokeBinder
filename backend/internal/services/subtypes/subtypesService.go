@@ -6,8 +6,8 @@ import (
 	subtypesRepository "backend/internal/repository/subtypes"
 )
 
-func GetAllSubTypes(env *internal.Env) ([]models.SubtypeModel, error) {
-	allTypes, err := subtypesRepository.GetAllSubTypes(env.DB)
+func GetAllSubtypes(env *internal.Env) ([]models.SubtypeModel, error) {
+	allTypes, err := subtypesRepository.GetAllSubtypes(env.DB)
 	if err != nil {
 		return []models.SubtypeModel{}, err
 	}
