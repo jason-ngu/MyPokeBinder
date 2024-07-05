@@ -1,4 +1,4 @@
-package supersupertypesRepository
+package supertypesRepository
 
 import (
 	"backend/internal/models"
