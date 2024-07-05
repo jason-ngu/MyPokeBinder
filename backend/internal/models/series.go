@@ -1,7 +1,7 @@
 package models
 
 type SeriesEntity struct {
-	SeriesId   int    `json:"series_id"`
+	SeriesID   int    `json:"series_id"`
 	SeriesName string `json:"series_name"`
 }
 
