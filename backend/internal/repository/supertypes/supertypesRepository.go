@@ -5,7 +5,7 @@ import (
 	"database/sql"
 )
 
-func GetAllSuperTypes(db *sql.DB) ([]models.SupertypeModel, error) {
+func GetAllSupertypes(db *sql.DB) ([]models.SupertypeModel, error) {
 	rows, err := db.Query("SELECT * FROM public.supertypes")
 	if err != nil {
 		return nil, err
@@ -46,8 +46,8 @@ func GetSupertypeById(db *sql.DB, id int) (models.SupertypeModel, error) {
 	return models.SupertypeModel{SupertypeName: t.SupertypeName}, nil
 }
 
-func GetSupertypeByName(db *sql.DB, typeName string) (models.SupertypeModel, error) {
-	row := db.QueryRow("SELECT * FROM public.supertypes WHERE supertype_name = $1", typeName)
+func GetSupertypeByName(db *sql.DB, supertypeName string) (models.SupertypeModel, error) {
+	row := db.QueryRow("SELECT * FROM public.supertypes WHERE supertype_name = $1", supertypeName)
 	if err := row.Err(); err != nil {
 		return models.SupertypeModel{}, err
 	}

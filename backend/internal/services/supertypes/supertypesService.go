@@ -6,8 +6,8 @@ import (
 	supertypesRepository "backend/internal/repository/supertypes"
 )
 
-func GetAllTypes(env *internal.Env) ([]models.SupertypeModel, error) {
-	allTypes, err := supertypesRepository.GetAllSuperTypes(env.DB)
+func GetAllSupertypes(env *internal.Env) ([]models.SupertypeModel, error) {
+	allTypes, err := supertypesRepository.GetAllSupertypes(env.DB)
 	if err != nil {
 		return []models.SupertypeModel{}, err
 	}
