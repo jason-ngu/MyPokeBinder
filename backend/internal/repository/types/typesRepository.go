@@ -34,9 +34,20 @@ func GetAllTypes(db *sql.DB) ([]models.TypeModel, error) {
 	return types, nil
 }
 
-// func getTypeById(id int) Types {
+func GetTypeById(db *sql.DB, id int) (models.TypeModel, error) {
+	row := db.QueryRow("SELECT * FROM public.types WHERE type_id = $1", id)
+	if err := row.Err(); err != nil {
+		return models.TypeModel{}, err
+	}
 
-// }
+	var t models.TypeEntity
+	err := row.Scan(&t.TypeID, &t.TypeName)
+	if err != nil {
+		return models.TypeModel{}, err
+	}
+
+	return models.TypeModel{TypeName: t.TypeName}, nil
+}
 
 // func createType(typeName string) {
 

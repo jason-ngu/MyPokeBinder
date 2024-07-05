@@ -36,6 +36,12 @@ func Datasync() {
 	}
 
 	fmt.Println(allTypes)
+
+	t, err := typesService.GetTypeById(env, 3)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(t)
 }
 
 // type Series struct {

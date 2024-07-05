@@ -6,10 +6,6 @@ import (
 	typesRepository "backend/internal/repository/types"
 )
 
-type Types struct {
-	TypeName string
-}
-
 func GetAllTypes(env *internal.Env) ([]models.TypeModel, error) {
 	allTypes, err := typesRepository.GetAllTypes(env.DB)
 	if err != nil {
@@ -18,9 +14,13 @@ func GetAllTypes(env *internal.Env) ([]models.TypeModel, error) {
 	return allTypes, nil
 }
 
-// func getTypeById(id int) Types {
-
-// }
+func GetTypeById(env *internal.Env, id int) (models.TypeModel, error) {
+	t, err := typesRepository.GetTypeById(env.DB, id)
+	if err != nil {
+		return models.TypeModel{}, err
+	}
+	return t, err
+}
 
 // func createType(typeName string) {
 
