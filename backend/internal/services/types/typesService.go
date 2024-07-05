@@ -9,7 +9,7 @@ import (
 func GetAllTypes(env *internal.Env) ([]models.TypeModel, error) {
 	allTypes, err := typesRepository.GetAllTypes(env.DB)
 	if err != nil {
-		return nil, err
+		return []models.TypeModel{}, err
 	}
 	return allTypes, nil
 }
