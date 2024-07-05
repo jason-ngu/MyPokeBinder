@@ -49,6 +49,36 @@ func GetTypeById(db *sql.DB, id int) (models.TypeModel, error) {
 	return models.TypeModel{TypeName: t.TypeName}, nil
 }
 
-// func createType(typeName string) {
+func GetTypeByName(db *sql.DB, typeName string) (models.TypeModel, error) {
+	row := db.QueryRow("SELECT * FROM public.types WHERE type_name = $1", typeName)
+	if err := row.Err(); err != nil {
+		return models.TypeModel{}, err
+	}
 
-// }
+	var t models.TypeEntity
+	err := row.Scan(&t.TypeID, &t.TypeName)
+	if err != nil {
+		return models.TypeModel{}, err
+	}
+
+	return models.TypeModel{TypeName: t.TypeName}, nil
+}
+
+func CreateType(db *sql.DB, newType models.TypeModel) (int64, error) {
+	_, err := GetTypeByName(db, newType.TypeName)
+	if err != nil {
+		return 0, err
+	}
+
+	result, err := db.Exec("INSERT INTO public.types (type_name) VALUES ($1)", newType.TypeName)
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
