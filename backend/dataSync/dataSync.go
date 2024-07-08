@@ -1,6 +1,7 @@
 package datasync
 
 import (
+	"backend/common/configStart"
 	internal "backend/internal"
 	typesService "backend/internal/services/types"
 	"database/sql"
@@ -10,16 +11,9 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	host      = "localhost"
-	port      = 5432
-	user      = "postgres"
-	password  = "4583"
-	dbname    = "mypokebinder"
-	tcgApiKey = "8c07ea97-a973-43ac-92a9-45d27980d6c6"
-)
-
 func Datasync() {
+	config := configStart.SetupConfig()
+
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
