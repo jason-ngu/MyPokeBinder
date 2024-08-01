@@ -62,8 +62,8 @@ func GetSeriesByName(db *sql.DB, seriesName string) (models.SeriesModel, error) 
 }
 
 func CreateSeries(db *sql.DB, newSeries models.SeriesModel) (int64, error) {
-	_, err := GetSeriesByName(db, newSeries.SeriesName)
-	if err != nil {
+	series, err := GetSeriesByName(db, newSeries.SeriesName)
+	if (series != models.SeriesModel{}) && (err != nil) {
 		return 0, err
 	}
 
