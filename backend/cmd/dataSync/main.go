@@ -1,22 +1,31 @@
-package datasync
+package main
 
 import (
-	"backend/common/configStart"
+	common "backend/common"
 	internal "backend/internal"
+	models "backend/internal/models"
+	raritiesService "backend/internal/services/rarities"
+	seriesService "backend/internal/services/series"
+	subtypesService "backend/internal/services/subtypes"
+	superTypesService "backend/internal/services/supertypes"
 	typesService "backend/internal/services/types"
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
+	tcg "github.com/PokemonTCG/pokemon-tcg-sdk-go-v2/pkg"
 	_ "github.com/lib/pq"
 )
 
-func Datasync() {
-	config := configStart.SetupConfig()
+var fullSyncFlag, halfSyncFlag = false, false
+
+func main() {
+	config := common.SetupConfig()
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+		config.Database.Host, config.Database.Port, config.Database.User, config.Database.Password, config.Database.DatabaseName)
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
@@ -24,18 +33,86 @@ func Datasync() {
 	}
 	env := &internal.Env{DB: db}
 
-	allTypes, err := typesService.GetAllTypes(env)
-	if err != nil {
-		log.Fatalln(err)
+	tcgClient := tcg.NewClient(config.ApiKey)
+
+	args := os.Args[1:]
+
+	if len(args) == 1 && args[0] == "full" {
+		fullSyncFlag = true
+	} else if len(args) == 1 && args[0] == "half" {
+		halfSyncFlag = true
 	}
 
-	fmt.Println(allTypes)
-
-	t, err := typesService.GetTypeById(env, 3)
-	if err != nil {
-		log.Fatalln(err)
+	if halfSyncFlag {
+		sets, err := tcgClient.GetSets()
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, curSet := range sets {
+			newSeries := models.SeriesModel{SeriesName: curSet.Series}
+			seriesService.CreateSeries(env, newSeries)
+		}
+		log.Println("Half Sync Complete")
 	}
-	fmt.Println(t)
+	if fullSyncFlag {
+		// Sync Types to DB
+		types, err := tcgClient.GetTypes()
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, curType := range types {
+			newType := models.TypeModel{TypeName: curType}
+			newTypeId, err := typesService.CreateType(env, newType)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Println("Created new Type: %s with id: %d", curType, newTypeId)
+		}
+		// Sync Subtypes to DB
+		subtypes, err := tcgClient.GetSubTypes()
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, curSubtype := range subtypes {
+			newSubtype := models.SubtypeModel{SubtypeName: curSubtype}
+			newSubtypeId, err := subtypesService.CreateSubtype(env, newSubtype)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Println("Created new Subtype: %s with id: %d", curSubtype, newSubtypeId)
+		}
+		// Sync Supertypes to DB
+		supertypes, err := tcgClient.GetSuperTypes()
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, curSupertype := range supertypes {
+			newSupertype := models.SupertypeModel{SupertypeName: curSupertype}
+			newSupertypeId, err := superTypesService.CreateSupertype(env, newSupertype)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Println("Created new Supertype: %s with id: %d", curSupertype, newSupertypeId)
+		}
+		// Sync Rarities to DB
+		rarities, err := tcgClient.GetRarities()
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, curRarity := range rarities {
+			newRarity := models.RarityModel{RarityName: curRarity}
+			newRarityId, err := raritiesService.CreateRarity(env, newRarity)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Println("Created new Rarity: %s with id: %d", curRarity, newRarityId)
+		}
+		log.Println("Full Sync Complete")
+		// PriceTypes will remain constant
+		// Series will remain constant
+	}
+	// Sync Cards and Price data to DB
+	log.Println("Sync Complete")
 }
 
 // type Series struct {

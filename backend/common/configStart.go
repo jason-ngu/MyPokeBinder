@@ -18,7 +18,10 @@ type Configuration struct {
 }
 
 func SetupConfig() Configuration {
-	file, _ := os.Open("config.json")
+	file, error := os.Open("config.json")
+	if error != nil {
+		fmt.Println("error: ", error)
+	}
 	defer file.Close()
 	decoder := json.NewDecoder(file)
 	configuration := Configuration{}

@@ -22,5 +22,4 @@ go.work.sum
 .env
 
 /.vscode
-
-/backend/local.config.json
+*local.config.json
