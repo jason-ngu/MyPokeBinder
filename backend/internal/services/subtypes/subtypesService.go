@@ -7,25 +7,25 @@ import (
 )
 
 func GetAllSubtypes(env *internal.Env) ([]models.SubtypeModel, error) {
-	allTypes, err := subtypesRepository.GetAllSubtypes(env.DB)
+	allSubtypes, err := subtypesRepository.GetAllSubtypes(env.DB)
 	if err != nil {
 		return []models.SubtypeModel{}, err
 	}
-	return allTypes, nil
+	return allSubtypes, nil
 }
 
 func GetSubtypeById(env *internal.Env, id int) (models.SubtypeModel, error) {
-	t, err := subtypesRepository.GetSubtypeById(env.DB, id)
+	subtype, err := subtypesRepository.GetSubtypeById(env.DB, id)
 	if err != nil {
 		return models.SubtypeModel{}, err
 	}
-	return t, nil
+	return subtype, nil
 }
 
-func CreateSubtype(env *internal.Env, newSubtype models.SubtypeModel) (int64, error) {
-	id, err := subtypesRepository.CreateSubtype(env.DB, newSubtype)
+func CreateSubtype(env *internal.Env, newSubtype models.SubtypeModel) (models.SubtypeModel, error) {
+	subtype, err := subtypesRepository.CreateSubtype(env.DB, newSubtype)
 	if err != nil {
-		return 0, err
+		return models.SubtypeModel{}, err
 	}
-	return id, nil
+	return subtype, nil
 }
