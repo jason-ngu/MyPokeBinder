@@ -7,19 +7,19 @@ import (
 )
 
 func GetAllSupertypes(env *internal.Env) ([]models.SupertypeModel, error) {
-	allTypes, err := supertypesRepository.GetAllSupertypes(env.DB)
+	allSupertypes, err := supertypesRepository.GetAllSupertypes(env.DB)
 	if err != nil {
 		return []models.SupertypeModel{}, err
 	}
-	return allTypes, nil
+	return allSupertypes, nil
 }
 
 func GetSupertypeById(env *internal.Env, id int) (models.SupertypeModel, error) {
-	t, err := supertypesRepository.GetSupertypeById(env.DB, id)
+	supertype, err := supertypesRepository.GetSupertypeById(env.DB, id)
 	if err != nil {
 		return models.SupertypeModel{}, err
 	}
-	return t, nil
+	return supertype, nil
 }
 
 func CreateSupertype(env *internal.Env, newSuperType models.SupertypeModel) (models.SupertypeModel, error) {

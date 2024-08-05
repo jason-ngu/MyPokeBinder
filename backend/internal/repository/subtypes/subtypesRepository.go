@@ -61,22 +61,22 @@ func GetSubtypeByName(db *sql.DB, subtypeName string) (models.SubtypeModel, erro
 	return models.SubtypeModel{SubtypeName: t.SubtypeName}, nil
 }
 
-func CreateSubtype(db *sql.DB, newSubType models.SubtypeModel) (models.SubtypeModel, error) {
-	subtype, err := GetSubtypeByName(db, newSubType.SubtypeName)
+func CreateSubtype(db *sql.DB, newSubtype models.SubtypeModel) (models.SubtypeModel, error) {
+	subtype, err := GetSubtypeByName(db, newSubtype.SubtypeName)
 	// If subtype already exists, return it
 	if (err == nil) && (subtype != models.SubtypeModel{}) {
 		return subtype, nil
 	}
 
-	_, err = db.Exec("INSERT INTO public.subtypes (subtype_name) VALUES ($1)", newSubType.SubtypeName)
+	_, err = db.Exec("INSERT INTO public.subtypes (subtype_name) VALUES ($1)", newSubtype.SubtypeName)
 	if err != nil {
 		return models.SubtypeModel{}, err
 	}
 
-	newSubtype, err := GetSubtypeByName(db, newSubType.SubtypeName)
+	createdSubtype, err := GetSubtypeByName(db, newSubtype.SubtypeName)
 	if err != nil {
 		return models.SubtypeModel{}, err
 	}
 
-	return newSubtype, nil
+	return createdSubtype, nil
 }

@@ -77,10 +77,10 @@ func CreateType(db *sql.DB, newType models.TypeModel) (models.TypeModel, error) 
 		return models.TypeModel{}, err
 	}
 
-	newType, err = GetTypeByName(db, newType.TypeName)
+	createdType, err := GetTypeByName(db, newType.TypeName)
 	if err != nil {
 		return models.TypeModel{}, err
 	}
 
-	return newType, nil
+	return createdType, nil
 }
