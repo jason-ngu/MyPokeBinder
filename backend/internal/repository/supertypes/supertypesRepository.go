@@ -61,21 +61,22 @@ func GetSupertypeByName(db *sql.DB, supertypeName string) (models.SupertypeModel
 	return models.SupertypeModel{SupertypeName: t.SupertypeName}, nil
 }
 
-func CreateSupertype(db *sql.DB, newSuperType models.SupertypeModel) (int64, error) {
-	_, err := GetSupertypeByName(db, newSuperType.SupertypeName)
-	if err != nil {
-		return 0, err
+func CreateSupertype(db *sql.DB, newSuperType models.SupertypeModel) (models.SupertypeModel, error) {
+	supertype, err := GetSupertypeByName(db, newSuperType.SupertypeName)
+	// If supertype already exists, return it
+	if (err != nil) && (supertype != models.SupertypeModel{}) {
+		return supertype, err
 	}
 
-	result, err := db.Exec("INSERT INTO public.supertypes (supertype_name) VALUES ($1)", newSuperType.SupertypeName)
+	_, err = db.Exec("INSERT INTO public.supertypes (supertype_name) VALUES ($1)", newSuperType.SupertypeName)
 	if err != nil {
-		return 0, err
+		return models.SupertypeModel{}, err
 	}
 
-	id, err := result.LastInsertId()
+	newSupertype, err := GetSupertypeByName(db, newSuperType.SupertypeName)
 	if err != nil {
-		return 0, err
+		return models.SupertypeModel{}, err
 	}
 
-	return id, nil
+	return newSupertype, nil
 }

@@ -22,10 +22,10 @@ func GetSupertypeById(env *internal.Env, id int) (models.SupertypeModel, error) 
 	return t, nil
 }
 
-func CreateSupertype(env *internal.Env, newSuperType models.SupertypeModel) (int64, error) {
-	id, err := supertypesRepository.CreateSupertype(env.DB, newSuperType)
+func CreateSupertype(env *internal.Env, newSuperType models.SupertypeModel) (models.SupertypeModel, error) {
+	supertype, err := supertypesRepository.CreateSupertype(env.DB, newSuperType)
 	if err != nil {
-		return 0, err
+		return models.SupertypeModel{}, err
 	}
-	return id, nil
+	return supertype, nil
 }
