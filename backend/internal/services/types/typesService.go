@@ -22,10 +22,10 @@ func GetTypeById(env *internal.Env, id int) (models.TypeModel, error) {
 	return t, nil
 }
 
-func CreateType(env *internal.Env, newType models.TypeModel) (int64, error) {
-	id, err := typesRepository.CreateType(env.DB, newType)
+func CreateType(env *internal.Env, newType models.TypeModel) (models.TypeModel, error) {
+	t, err := typesRepository.CreateType(env.DB, newType)
 	if err != nil {
-		return 0, err
+		return models.TypeModel{}, err
 	}
-	return id, nil
+	return t, nil
 }

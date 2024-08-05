@@ -64,21 +64,23 @@ func GetTypeByName(db *sql.DB, typeName string) (models.TypeModel, error) {
 	return models.TypeModel{TypeName: t.TypeName}, nil
 }
 
-func CreateType(db *sql.DB, newType models.TypeModel) (int64, error) {
-	_, err := GetTypeByName(db, newType.TypeName)
-	if err != nil {
-		return 0, err
+func CreateType(db *sql.DB, newType models.TypeModel) (models.TypeModel, error) {
+	t, err := GetTypeByName(db, newType.TypeName)
+	// If type already exists, return it
+	if (err == nil) && (t != models.TypeModel{}) {
+		return t, nil
 	}
 
-	result, err := db.Exec("INSERT INTO public.types (type_name) VALUES ($1)", newType.TypeName)
+	// If it doesn't exist, try to create new type
+	_, err = db.Exec("INSERT INTO public.types (type_name) VALUES ($1)", newType.TypeName)
 	if err != nil {
-		return 0, err
+		return models.TypeModel{}, err
 	}
 
-	id, err := result.LastInsertId()
+	newType, err = GetTypeByName(db, newType.TypeName)
 	if err != nil {
-		return 0, err
+		return models.TypeModel{}, err
 	}
 
-	return id, nil
+	return newType, nil
 }
