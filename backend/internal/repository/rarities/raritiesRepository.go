@@ -61,21 +61,22 @@ func GetRarityByName(db *sql.DB, raritiesName string) (models.RarityModel, error
 	return models.RarityModel{RarityName: t.RarityName}, nil
 }
 
-func CreateRarity(db *sql.DB, newRarity models.RarityModel) (int64, error) {
-	_, err := GetRarityByName(db, newRarity.RarityName)
-	if err != nil {
-		return 0, err
+func CreateRarity(db *sql.DB, newRarity models.RarityModel) (models.RarityModel, error) {
+	rarity, err := GetRarityByName(db, newRarity.RarityName)
+	// If rarity already exists, return it
+	if (err != nil) && (rarity != models.RarityModel{}) {
+		return rarity, err
 	}
 
-	result, err := db.Exec("INSERT INTO public.rarities (rarity_name) VALUES ($1)", newRarity.RarityName)
+	_, err = db.Exec("INSERT INTO public.rarities (rarity_name) VALUES ($1)", newRarity.RarityName)
 	if err != nil {
-		return 0, err
+		return models.RarityModel{}, err
 	}
 
-	id, err := result.LastInsertId()
+	createdRarity, err := GetRarityByName(db, newRarity.RarityName)
 	if err != nil {
-		return 0, err
+		return models.RarityModel{}, err
 	}
 
-	return id, nil
+	return createdRarity, nil
 }
