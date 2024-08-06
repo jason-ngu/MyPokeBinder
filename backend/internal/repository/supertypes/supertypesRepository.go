@@ -32,7 +32,7 @@ func GetAllSupertypes(db *sql.DB) ([]models.SupertypeModel, error) {
 }
 
 func GetSupertypeById(db *sql.DB, id int) (models.SupertypeModel, error) {
-	row := db.QueryRow("SELECT * FROM public.supertypes WHERE type_id = $1", id)
+	row := db.QueryRow("SELECT * FROM public.supertypes WHERE supertype_id = $1", id)
 	if err := row.Err(); err != nil {
 		return models.SupertypeModel{}, err
 	}

@@ -32,7 +32,7 @@ func GetAllSubtypes(db *sql.DB) ([]models.SubtypeModel, error) {
 }
 
 func GetSubtypeById(db *sql.DB, id int) (models.SubtypeModel, error) {
-	row := db.QueryRow("SELECT * FROM public.subtypes WHERE type_id = $1", id)
+	row := db.QueryRow("SELECT * FROM public.subtypes WHERE subtype_id = $1", id)
 	if err := row.Err(); err != nil {
 		return models.SubtypeModel{}, err
 	}
