@@ -22,7 +22,7 @@ func GetAllSeries(db *sql.DB) ([]models.SeriesModel, error) {
 			return nil, err
 		}
 
-		series = append(series, models.SeriesModel{SeriesName: t.SeriesName})
+		series = append(series, models.SeriesModel{SeriesID: t.SeriesID, SeriesName: t.SeriesName})
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func GetSeriesById(db *sql.DB, id int) (models.SeriesModel, error) {
 		return models.SeriesModel{}, err
 	}
 
-	return models.SeriesModel{SeriesName: t.SeriesName}, nil
+	return models.SeriesModel{SeriesID: t.SeriesID, SeriesName: t.SeriesName}, nil
 }
 
 func GetSeriesByName(db *sql.DB, seriesName string) (models.SeriesModel, error) {
@@ -58,24 +58,25 @@ func GetSeriesByName(db *sql.DB, seriesName string) (models.SeriesModel, error) 
 		return models.SeriesModel{}, err
 	}
 
-	return models.SeriesModel{SeriesName: t.SeriesName}, nil
+	return models.SeriesModel{SeriesID: t.SeriesID, SeriesName: t.SeriesName}, nil
 }
 
-func CreateSeries(db *sql.DB, newSeries models.SeriesModel) (int64, error) {
+func CreateSeries(db *sql.DB, newSeries models.SeriesModel) (models.SeriesModel, error) {
 	series, err := GetSeriesByName(db, newSeries.SeriesName)
-	if (series != models.SeriesModel{}) && (err != nil) {
-		return 0, err
+	// If series already exists, return it
+	if (err == nil) && (series != models.SeriesModel{}) {
+		return series, err
 	}
 
-	result, err := db.Exec("INSERT INTO public.series (series_name) VALUES ($1)", newSeries.SeriesName)
+	_, err = db.Exec("INSERT INTO public.series (series_name) VALUES ($1)", newSeries.SeriesName)
 	if err != nil {
-		return 0, err
+		return models.SeriesModel{}, err
 	}
 
-	id, err := result.LastInsertId()
+	createdSeries, err := GetSeriesByName(db, newSeries.SeriesName)
 	if err != nil {
-		return 0, err
+		return models.SeriesModel{}, err
 	}
 
-	return id, nil
+	return createdSeries, nil
 }

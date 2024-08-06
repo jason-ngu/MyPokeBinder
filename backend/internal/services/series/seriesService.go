@@ -7,25 +7,33 @@ import (
 )
 
 func GetAllSeries(env *internal.Env) ([]models.SeriesModel, error) {
-	allTypes, err := seriesRepository.GetAllSeries(env.DB)
+	allSeries, err := seriesRepository.GetAllSeries(env.DB)
 	if err != nil {
 		return []models.SeriesModel{}, err
 	}
-	return allTypes, nil
+	return allSeries, nil
 }
 
 func GetSeriesById(env *internal.Env, id int) (models.SeriesModel, error) {
-	t, err := seriesRepository.GetSeriesById(env.DB, id)
+	series, err := seriesRepository.GetSeriesById(env.DB, id)
 	if err != nil {
 		return models.SeriesModel{}, err
 	}
-	return t, nil
+	return series, nil
 }
 
-func CreateSeries(env *internal.Env, newSeries models.SeriesModel) (int64, error) {
-	id, err := seriesRepository.CreateSeries(env.DB, newSeries)
+func GetSeriesByName(env *internal.Env, seriesName string) (models.SeriesModel, error) {
+	series, err := seriesRepository.GetSeriesByName(env.DB, seriesName)
 	if err != nil {
-		return 0, err
+		return models.SeriesModel{}, err
 	}
-	return id, nil
+	return series, nil
+}
+
+func CreateSeries(env *internal.Env, newSeries models.SeriesModel) (models.SeriesModel, error) {
+	series, err := seriesRepository.CreateSeries(env.DB, newSeries)
+	if err != nil {
+		return models.SeriesModel{}, err
+	}
+	return series, nil
 }

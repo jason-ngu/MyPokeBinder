@@ -6,5 +6,6 @@ type SeriesEntity struct {
 }
 
 type SeriesModel struct {
+	SeriesID   int
 	SeriesName string
 }

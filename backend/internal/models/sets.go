@@ -4,7 +4,7 @@ import "time"
 
 type SetEntity struct {
 	SetID             int       `json:"set_id"`
-	ApiId             string    `json:"api_id"`
+	SetCode           string    `json:"set_code"`
 	SetName           string    `json:"set_name"`
 	SeriesId          int       `json:"series_id"`
 	PtcgoCode         string    `json:"ptcgo_code"`
@@ -19,6 +19,7 @@ type SetEntity struct {
 
 type SetModel struct {
 	SetName           string
+	SetCode           string
 	SeriesName        string
 	PtcgoCode         string
 	CardTotal         int
