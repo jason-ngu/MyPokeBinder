@@ -18,7 +18,7 @@ type Configuration struct {
 }
 
 func SetupConfig() Configuration {
-	file, error := os.Open("config.json")
+	file, error := os.Open("local.config.json")
 	if error != nil {
 		fmt.Println("error: ", error)
 	}
