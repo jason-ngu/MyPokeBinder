@@ -22,7 +22,7 @@ CREATE TABLE rarities(
 
 CREATE TABLE series(
     series_id       SERIAL PRIMARY KEY,
-    series_name     VARCHAR(20) UNIQUE NOT NULL
+    series_name     VARCHAR(50) UNIQUE NOT NULL
 );
 
 CREATE TABLE pricetypes(
@@ -45,10 +45,10 @@ CREATE TABLE collections(
 
 CREATE TABLE sets(
     set_id              SERIAL PRIMARY KEY,
-    api_id              TEXT NOT NULL,
+    set_code            TEXT NOT NULL,
     set_name            TEXT NOT NULL,
     series_id           INTEGER NOT NULL REFERENCES series(series_id),
-    ptcgo_code          VARCHAR(5),
+    ptcgo_code          VARCHAR(10),
     card_total          INTEGER NOT NULL,
     extended_card_total INTEGER NOT NULL,
     set_release_Date    TIMESTAMPTZ,
@@ -60,7 +60,7 @@ CREATE TABLE sets(
 
 CREATE TABLE cards(
     card_id             SERIAL PRIMARY KEY,
-    api_id              TEXT NOT NULL,
+    card_code           TEXT NOT NULL,
     card_name           TEXT NOT NULL,
     set_id              INTEGER NOT NULL REFERENCES sets(set_id),
     supertype_id        INTEGER NOT NULL REFERENCES supertypes(supertype_id),
