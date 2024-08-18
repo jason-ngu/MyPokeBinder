@@ -22,7 +22,7 @@ func GetAllRarities(db *sql.DB) ([]models.RarityModel, error) {
 			return nil, err
 		}
 
-		rarities = append(rarities, models.RarityModel{RarityName: t.RarityName})
+		rarities = append(rarities, models.RarityModel(t))
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
@@ -33,32 +33,32 @@ func GetAllRarities(db *sql.DB) ([]models.RarityModel, error) {
 
 func GetRarityById(db *sql.DB, id int) (models.RarityModel, error) {
 	row := db.QueryRow("SELECT * FROM public.rarities WHERE rarity_id = $1", id)
-	if err := row.Err(); err != nil {
-		return models.RarityModel{}, err
-	}
 
 	var t models.RarityEntity
 	err := row.Scan(&t.RarityID, &t.RarityName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.RarityModel{}, nil
+		}
 		return models.RarityModel{}, err
 	}
 
-	return models.RarityModel{RarityName: t.RarityName}, nil
+	return models.RarityModel(t), nil
 }
 
 func GetRarityByName(db *sql.DB, raritiesName string) (models.RarityModel, error) {
 	row := db.QueryRow("SELECT * FROM public.rarities WHERE rarity_name = $1", raritiesName)
-	if err := row.Err(); err != nil {
-		return models.RarityModel{}, err
-	}
 
 	var t models.RarityEntity
 	err := row.Scan(&t.RarityID, &t.RarityName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.RarityModel{}, nil
+		}
 		return models.RarityModel{}, err
 	}
 
-	return models.RarityModel{RarityName: t.RarityName}, nil
+	return models.RarityModel(t), nil
 }
 
 func CreateRarity(db *sql.DB, newRarity models.RarityModel) (models.RarityModel, error) {

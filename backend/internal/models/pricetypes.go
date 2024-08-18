@@ -6,5 +6,6 @@ type PricetypeEntity struct {
 }
 
 type PricetypeModel struct {
+	PricetypeID   int
 	PricetypeName string
 }

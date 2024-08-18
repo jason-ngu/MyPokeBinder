@@ -22,7 +22,7 @@ func GetAllSupertypes(db *sql.DB) ([]models.SupertypeModel, error) {
 			return nil, err
 		}
 
-		supertypes = append(supertypes, models.SupertypeModel{SupertypeName: t.SupertypeName})
+		supertypes = append(supertypes, models.SupertypeModel(t))
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
@@ -33,32 +33,32 @@ func GetAllSupertypes(db *sql.DB) ([]models.SupertypeModel, error) {
 
 func GetSupertypeById(db *sql.DB, id int) (models.SupertypeModel, error) {
 	row := db.QueryRow("SELECT * FROM public.supertypes WHERE supertype_id = $1", id)
-	if err := row.Err(); err != nil {
-		return models.SupertypeModel{}, err
-	}
 
 	var t models.SupertypeEntity
 	err := row.Scan(&t.SupertypeID, &t.SupertypeName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.SupertypeModel{}, nil
+		}
 		return models.SupertypeModel{}, err
 	}
 
-	return models.SupertypeModel{SupertypeName: t.SupertypeName}, nil
+	return models.SupertypeModel(t), nil
 }
 
 func GetSupertypeByName(db *sql.DB, supertypeName string) (models.SupertypeModel, error) {
 	row := db.QueryRow("SELECT * FROM public.supertypes WHERE supertype_name = $1", supertypeName)
-	if err := row.Err(); err != nil {
-		return models.SupertypeModel{}, err
-	}
 
 	var t models.SupertypeEntity
 	err := row.Scan(&t.SupertypeID, &t.SupertypeName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.SupertypeModel{}, nil
+		}
 		return models.SupertypeModel{}, err
 	}
 
-	return models.SupertypeModel{SupertypeName: t.SupertypeName}, nil
+	return models.SupertypeModel(t), nil
 }
 
 func CreateSupertype(db *sql.DB, newSupertype models.SupertypeModel) (models.SupertypeModel, error) {

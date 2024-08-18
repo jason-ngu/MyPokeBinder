@@ -22,7 +22,7 @@ func GetAllSeries(db *sql.DB) ([]models.SeriesModel, error) {
 			return nil, err
 		}
 
-		series = append(series, models.SeriesModel{SeriesID: t.SeriesID, SeriesName: t.SeriesName})
+		series = append(series, models.SeriesModel(t))
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
@@ -33,32 +33,32 @@ func GetAllSeries(db *sql.DB) ([]models.SeriesModel, error) {
 
 func GetSeriesById(db *sql.DB, id int) (models.SeriesModel, error) {
 	row := db.QueryRow("SELECT * FROM public.series WHERE series_id = $1", id)
-	if err := row.Err(); err != nil {
-		return models.SeriesModel{}, err
-	}
 
 	var t models.SeriesEntity
 	err := row.Scan(&t.SeriesID, &t.SeriesName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.SeriesModel{}, nil
+		}
 		return models.SeriesModel{}, err
 	}
 
-	return models.SeriesModel{SeriesID: t.SeriesID, SeriesName: t.SeriesName}, nil
+	return models.SeriesModel(t), nil
 }
 
 func GetSeriesByName(db *sql.DB, seriesName string) (models.SeriesModel, error) {
 	row := db.QueryRow("SELECT * FROM public.series WHERE series_name = $1", seriesName)
-	if err := row.Err(); err != nil {
-		return models.SeriesModel{}, err
-	}
 
 	var t models.SeriesEntity
 	err := row.Scan(&t.SeriesID, &t.SeriesName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.SeriesModel{}, nil
+		}
 		return models.SeriesModel{}, err
 	}
 
-	return models.SeriesModel{SeriesID: t.SeriesID, SeriesName: t.SeriesName}, nil
+	return models.SeriesModel(t), nil
 }
 
 func CreateSeries(db *sql.DB, newSeries models.SeriesModel) (models.SeriesModel, error) {

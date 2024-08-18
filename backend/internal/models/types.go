@@ -6,5 +6,6 @@ type TypeEntity struct {
 }
 
 type TypeModel struct {
+	TypeID   int
 	TypeName string
 }

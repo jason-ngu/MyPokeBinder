@@ -18,6 +18,7 @@ type SetEntity struct {
 }
 
 type SetModel struct {
+	SetID             int
 	SetName           string
 	SetCode           string
 	SeriesName        string

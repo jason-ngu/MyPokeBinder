@@ -25,7 +25,7 @@ func GetAllTypes(db *sql.DB) ([]models.TypeModel, error) {
 			return nil, err
 		}
 
-		types = append(types, models.TypeModel{TypeName: t.TypeName})
+		types = append(types, models.TypeModel(t))
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
@@ -36,32 +36,32 @@ func GetAllTypes(db *sql.DB) ([]models.TypeModel, error) {
 
 func GetTypeById(db *sql.DB, id int) (models.TypeModel, error) {
 	row := db.QueryRow("SELECT * FROM public.types WHERE type_id = $1", id)
-	if err := row.Err(); err != nil {
-		return models.TypeModel{}, err
-	}
 
 	var t models.TypeEntity
 	err := row.Scan(&t.TypeID, &t.TypeName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.TypeModel{}, nil
+		}
 		return models.TypeModel{}, err
 	}
 
-	return models.TypeModel{TypeName: t.TypeName}, nil
+	return models.TypeModel(t), nil
 }
 
 func GetTypeByName(db *sql.DB, typeName string) (models.TypeModel, error) {
 	row := db.QueryRow("SELECT * FROM public.types WHERE type_name = $1", typeName)
-	if err := row.Err(); err != nil {
-		return models.TypeModel{}, err
-	}
 
 	var t models.TypeEntity
 	err := row.Scan(&t.TypeID, &t.TypeName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.TypeModel{}, nil
+		}
 		return models.TypeModel{}, err
 	}
 
-	return models.TypeModel{TypeName: t.TypeName}, nil
+	return models.TypeModel(t), nil
 }
 
 func CreateType(db *sql.DB, newType models.TypeModel) (models.TypeModel, error) {

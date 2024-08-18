@@ -6,5 +6,6 @@ type SubtypeEntity struct {
 }
 
 type SubtypeModel struct {
+	SubtypeID   int
 	SubtypeName string
 }

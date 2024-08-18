@@ -22,7 +22,7 @@ func GetAllSubtypes(db *sql.DB) ([]models.SubtypeModel, error) {
 			return nil, err
 		}
 
-		subtypes = append(subtypes, models.SubtypeModel{SubtypeName: t.SubtypeName})
+		subtypes = append(subtypes, models.SubtypeModel(t))
 	}
 	if err = rows.Err(); err != nil {
 		return nil, err
@@ -33,32 +33,32 @@ func GetAllSubtypes(db *sql.DB) ([]models.SubtypeModel, error) {
 
 func GetSubtypeById(db *sql.DB, id int) (models.SubtypeModel, error) {
 	row := db.QueryRow("SELECT * FROM public.subtypes WHERE subtype_id = $1", id)
-	if err := row.Err(); err != nil {
-		return models.SubtypeModel{}, err
-	}
 
 	var t models.SubtypeEntity
 	err := row.Scan(&t.SubtypeID, &t.SubtypeName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.SubtypeModel{}, nil
+		}
 		return models.SubtypeModel{}, err
 	}
 
-	return models.SubtypeModel{SubtypeName: t.SubtypeName}, nil
+	return models.SubtypeModel(t), nil
 }
 
 func GetSubtypeByName(db *sql.DB, subtypeName string) (models.SubtypeModel, error) {
 	row := db.QueryRow("SELECT * FROM public.subtypes WHERE subtype_name = $1", subtypeName)
-	if err := row.Err(); err != nil {
-		return models.SubtypeModel{}, err
-	}
 
 	var t models.SubtypeEntity
 	err := row.Scan(&t.SubtypeID, &t.SubtypeName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.SubtypeModel{}, nil
+		}
 		return models.SubtypeModel{}, err
 	}
 
-	return models.SubtypeModel{SubtypeName: t.SubtypeName}, nil
+	return models.SubtypeModel(t), nil
 }
 
 func CreateSubtype(db *sql.DB, newSubtype models.SubtypeModel) (models.SubtypeModel, error) {

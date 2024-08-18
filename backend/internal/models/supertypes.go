@@ -6,5 +6,6 @@ type SupertypeEntity struct {
 }
 
 type SupertypeModel struct {
+	SupertypeID   int
 	SupertypeName string
 }

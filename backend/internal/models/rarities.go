@@ -6,5 +6,6 @@ type RarityEntity struct {
 }
 
 type RarityModel struct {
+	RarityID   int
 	RarityName string
 }

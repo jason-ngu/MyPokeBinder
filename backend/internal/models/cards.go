@@ -1,8 +1,8 @@
 package models
 
 type CardEntity struct {
-	CardId          int     `json:"card_id"`
-	ApiId           string  `json:"api_id"`
+	CardID          int     `json:"card_id"`
+	CardCode        string  `json:"card_code"`
 	CardName        string  `json:"card_name"`
 	SetId           int     `json:"set_id"`
 	SupertypeId     int     `json:"supertype_id"`
@@ -15,11 +15,22 @@ type CardEntity struct {
 }
 
 type CardModel struct {
+	CardID        int
 	CardName      string
+	CardCode      string
 	SetName       string
 	SupertypeName string
 	RarityName    string
 	MarketPrice   float32
 	PricetypeName string
 	Image         string
+}
+
+type CardSearchParams struct {
+	CardName      string
+	CardCode      string
+	SetName       string
+	SupertypeName string
+	RarityName    string
+	PricetypeName string
 }

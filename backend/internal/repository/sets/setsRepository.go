@@ -32,6 +32,7 @@ func GetAllSets(db *sql.DB) ([]models.SetModel, error) {
 		}
 
 		sets = append(sets, models.SetModel{
+			SetID:             t.SetID,
 			SetName:           t.SetName,
 			SetCode:           t.SetCode,
 			SeriesName:        series.SeriesName,
@@ -52,15 +53,15 @@ func GetAllSets(db *sql.DB) ([]models.SetModel, error) {
 
 func GetSetById(db *sql.DB, id int) (models.SetModel, error) {
 	row := db.QueryRow("SELECT * FROM public.sets WHERE set_id = $1", id)
-	if err := row.Err(); err != nil {
-		return models.SetModel{}, err
-	}
 
 	var t models.SetEntity
 	err := row.Scan(&t.SetID, &t.SetCode, &t.SetName, &t.SeriesId, &t.PtcgoCode,
 		&t.CardTotal, &t.ExtendedCardTotal, &t.SetReleaseDate, &t.SymbolImage, &t.LogoImage,
 		&t.SyncDateCreated, &t.SyncDateUpdated)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.SetModel{}, nil
+		}
 		return models.SetModel{}, err
 	}
 
@@ -70,6 +71,7 @@ func GetSetById(db *sql.DB, id int) (models.SetModel, error) {
 	}
 
 	return models.SetModel{
+		SetID:             t.SetID,
 		SetName:           t.SetName,
 		SetCode:           t.SetCode,
 		SeriesName:        series.SeriesName,
@@ -83,16 +85,20 @@ func GetSetById(db *sql.DB, id int) (models.SetModel, error) {
 }
 
 func GetSetByName(db *sql.DB, setName string) (models.SetModel, error) {
-	row := db.QueryRow("SELECT * FROM public.sets WHERE set_name = $1", setName)
-	if err := row.Err(); err != nil {
-		return models.SetModel{}, err
+	// Scarlet & Violet Promos should be Scarlet & Violet Black Star Promos
+	if setName == "Scarlet & Violet Promos" {
+		setName = "Scarlet & Violet Black Star Promos"
 	}
+	row := db.QueryRow("SELECT * FROM public.sets WHERE set_name = $1", setName)
 
 	var t models.SetEntity
 	err := row.Scan(&t.SetID, &t.SetCode, &t.SetName, &t.SeriesId, &t.PtcgoCode,
 		&t.CardTotal, &t.ExtendedCardTotal, &t.SetReleaseDate, &t.SymbolImage, &t.LogoImage,
 		&t.SyncDateCreated, &t.SyncDateUpdated)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.SetModel{}, nil
+		}
 		return models.SetModel{}, err
 	}
 
@@ -102,6 +108,7 @@ func GetSetByName(db *sql.DB, setName string) (models.SetModel, error) {
 	}
 
 	return models.SetModel{
+		SetID:             t.SetID,
 		SetName:           t.SetName,
 		SetCode:           t.SetCode,
 		SeriesName:        series.SeriesName,
