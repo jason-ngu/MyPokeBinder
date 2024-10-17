@@ -64,7 +64,7 @@ func GetSupertypeByName(db *sql.DB, supertypeName string) (models.SupertypeModel
 func CreateSupertype(db *sql.DB, newSupertype models.SupertypeModel) (models.SupertypeModel, error) {
 	supertype, err := GetSupertypeByName(db, newSupertype.SupertypeName)
 	// If supertype already exists, return it
-	if (err != nil) && (supertype != models.SupertypeModel{}) {
+	if (err == nil) && (supertype != models.SupertypeModel{}) {
 		return supertype, err
 	}
 

@@ -64,7 +64,7 @@ func GetRarityByName(db *sql.DB, raritiesName string) (models.RarityModel, error
 func CreateRarity(db *sql.DB, newRarity models.RarityModel) (models.RarityModel, error) {
 	rarity, err := GetRarityByName(db, newRarity.RarityName)
 	// If rarity already exists, return it
-	if (err != nil) && (rarity != models.RarityModel{}) {
+	if (err == nil) && (rarity != models.RarityModel{}) {
 		return rarity, err
 	}
 
