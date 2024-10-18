@@ -150,3 +150,22 @@ func CreateSet(db *sql.DB, newSet models.SetModel) (models.SetModel, error) {
 
 	return createdSet, nil
 }
+
+func UpdateSet(db *sql.DB, setToUpdate models.SetModel) (models.SetModel, error) {
+	syncDateUpdated := time.Now()
+
+	_, err := db.Exec(`UPDATE public.sets
+		SET set_release_date = $1, sync_date_updated = $2
+		WHERE set_code = $3`,
+		setToUpdate.SetReleaseDate, syncDateUpdated, setToUpdate.SetCode)
+	if err != nil {
+		return models.SetModel{}, err
+	}
+
+	updatedSet, err := GetSetByName(db, setToUpdate.SetName)
+	if err != nil {
+		return models.SetModel{}, err
+	}
+
+	return updatedSet, nil
+}

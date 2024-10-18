@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	tcg "github.com/PokemonTCG/pokemon-tcg-sdk-go-v2/pkg"
@@ -23,7 +24,6 @@ import (
 )
 
 var fullSyncFlag, halfSyncFlag = false, false
-var timeFormat = time.RFC3339
 
 func main() {
 	config := common.SetupConfig()
@@ -71,9 +71,10 @@ func main() {
 				log.Printf("Created new Series: %s", newSeries.SeriesName)
 			}
 
-			// Create a new set
-			setReleaseDate, err := time.Parse(timeFormat, curSet.ReleaseDate)
+			formattedReleaseDate := strings.ReplaceAll(curSet.ReleaseDate, "/", "-")
+			setReleaseDate, err := time.Parse(time.DateOnly, formattedReleaseDate)
 			if err != nil {
+				log.Printf("Error parsing time")
 				log.Fatal(err)
 			}
 
@@ -92,8 +93,18 @@ func main() {
 			if err != nil {
 				log.Printf("Error creating set: %s - %s - %s", curSet.ID, curSet.Name, seriesLookup.SeriesName)
 				log.Fatal(err)
+			} else {
+				if (createdSet != models.SetModel{}) {
+					updatedSet, err := setsService.UpdateSet(env, newSet)
+					if err != nil {
+						log.Printf("Error updating set: %s - %s - %s", curSet.ID, curSet.Name, seriesLookup.SeriesName)
+						log.Fatal(err)
+					}
+					log.Printf("Updated set: %s", updatedSet.SetName)
+				} else {
+					log.Printf("Created new Set: %s", createdSet.SetName)
+				}
 			}
-			log.Printf("Created new Set: %s", createdSet.SetName)
 		}
 		log.Printf("Half Sync Complete at: %s", time.Now().String())
 	}
@@ -123,7 +134,7 @@ func main() {
 			newSubtype := models.SubtypeModel{SubtypeName: curSubtype}
 			createdSubtype, err := subtypesService.CreateSubtype(env, newSubtype)
 			if err != nil {
-				log.Printf("Error creating supertype: %s", curSubtype)
+				log.Printf("Error creating subtype: %s", curSubtype)
 				log.Fatal(err)
 			}
 			log.Printf("Created new Subtype: %s", createdSubtype.SubtypeName)

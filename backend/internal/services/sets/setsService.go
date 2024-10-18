@@ -37,3 +37,11 @@ func CreateSet(env *internal.Env, newSet models.SetModel) (models.SetModel, erro
 	}
 	return set, nil
 }
+
+func UpdateSet(env *internal.Env, setToUpdate models.SetModel) (models.SetModel, error) {
+	set, err := setsRepository.UpdateSet(env.DB, setToUpdate)
+	if err != nil {
+		return models.SetModel{}, err
+	}
+	return set, nil
+}
