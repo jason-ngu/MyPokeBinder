@@ -262,6 +262,71 @@ func GetCard(db *sql.DB, cardCode string, pricetype string) (models.CardModel, e
 	}, nil
 }
 
+func GetCardsById(db *sql.DB, cardIds []int) ([]models.CardModel, error) {
+	var strNumbers []string
+	for _, id := range cardIds {
+		strNumbers = append(strNumbers, fmt.Sprintf("%d", id))
+	}
+
+	// Join the string slice with commas
+	cardIdsStr := strings.Join(strNumbers, ", ")
+
+	rows, err := db.Query("SELECT * FROM public.cards WHERE card_id in ($1)", cardIdsStr)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var cards []models.CardModel
+
+	for rows.Next() {
+		var t models.CardEntity
+
+		err := rows.Scan(&t.CardID, &t.CardCode, &t.CardName, &t.SetId, &t.SupertypeId,
+			&t.RarityId, &t.MarketPrice, &t.PricetypeId, &t.Image, &t.SyncDateCreated, &t.SyncDateUpdated)
+		if err != nil {
+			return nil, err
+		}
+
+		set, err := setsRepository.GetSetById(db, t.SetId)
+		if err != nil {
+			return nil, err
+		}
+
+		supertype, err := supertypesRepository.GetSupertypeById(db, t.SupertypeId)
+		if err != nil {
+			return nil, err
+		}
+
+		rarity, err := raritiesRepository.GetRarityById(db, t.RarityId)
+		if err != nil {
+			return nil, err
+		}
+
+		pricetype, err := pricetypesRepository.GetPricetypeById(db, t.PricetypeId)
+		if err != nil {
+			return nil, err
+		}
+
+		cards = append(cards, models.CardModel{
+			CardID:        t.CardID,
+			CardName:      t.CardName,
+			CardCode:      t.CardCode,
+			SetName:       set.SetName,
+			SupertypeName: supertype.SupertypeName,
+			RarityName:    rarity.RarityName,
+			MarketPrice:   t.MarketPrice,
+			PricetypeName: pricetype.PricetypeName,
+			Image:         t.Image,
+		})
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return cards, nil
+}
+
 func CreateCard(db *sql.DB, newCard models.CardModel) (models.CardModel, error) {
 	syncDateCreated := time.Now()
 	syncDateUpdated := time.Now()
