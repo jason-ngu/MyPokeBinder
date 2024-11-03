@@ -35,22 +35,22 @@ func GetUserCollections(db *sql.DB, userId int) ([]models.CollectionModel, error
 	return collections, nil
 }
 
-func GetCollectionNameById(db *sql.DB, collectionId int) (string, error) {
-	row := db.QueryRow("SELECT collection_name FROM public.collections WHERE collection_id = $1", collectionId)
+func GetCollection(db *sql.DB, collectionId int) (models.CollectionModel, error) {
+	collection := db.QueryRow("SELECT * FROM public.collections WHERE collection_id = $1", collectionId)
 
-	var collectionName string
-	err := row.Scan(&collectionName)
+	var collectionEntity models.CollectionEntity
+	err := collection.Scan(&collectionEntity.CollectionID, &collectionEntity.CollectionName, &collectionEntity.UserID)
 	if err != nil {
-		return "", err
+		return models.CollectionModel{}, err
 	}
 
-	return collectionName, nil
+	return models.CollectionModel(collectionEntity), nil
 }
 
-func CreateCollection(db *sql.DB, collectionName string, userId int) (models.CollectionModel, error) {
+func CreateCollection(db *sql.DB, collectionToCreate models.CollectionModel) (models.CollectionModel, error) {
 	result, err := db.Exec(`INSERT INTO public.collections
 		(collection_name, user_id)
-		VALUES ($1, $2)`, collectionName, userId)
+		VALUES ($1, $2)`, collectionToCreate.CollectionName, collectionToCreate.UserID)
 	if err != nil {
 		return models.CollectionModel{}, err
 	}
@@ -62,16 +62,16 @@ func CreateCollection(db *sql.DB, collectionName string, userId int) (models.Col
 
 	return models.CollectionModel{
 		CollectionID:   int(newCollectionId),
-		CollectionName: collectionName,
-		UserID:         userId,
+		CollectionName: collectionToCreate.CollectionName,
+		UserID:         collectionToCreate.UserID,
 	}, nil
 }
 
-func UpdateCollection(db *sql.DB, collectionToUpdate models.CollectionModel) (models.CollectionModel, error) {
+func UpdateCollection(db *sql.DB, collectionId int, collectionToUpdate models.CollectionModel) (models.CollectionModel, error) {
 	_, err := db.Exec(`UPDATE public.collections
 		SET collection_name = $1
 		WHERE collection_id = $2 AND user_id = $3`,
-		collectionToUpdate.CollectionName, collectionToUpdate.CollectionID, collectionToUpdate.UserID)
+		collectionToUpdate.CollectionName, collectionId, collectionToUpdate.UserID)
 	if err != nil {
 		return models.CollectionModel{}, err
 	}
@@ -79,9 +79,9 @@ func UpdateCollection(db *sql.DB, collectionToUpdate models.CollectionModel) (mo
 	return collectionToUpdate, nil
 }
 
-func DeleteCollection(db *sql.DB, collectionToDelete models.CollectionModel) (bool, error) {
+func DeleteCollection(db *sql.DB, collectionId int) (bool, error) {
 	_, err := db.Exec(`DELETE FROM public.collections
-		WHERE collection_id = $1`, collectionToDelete.CollectionID)
+		WHERE collection_id = $1`, collectionId)
 	if err != nil {
 		return false, err
 	}

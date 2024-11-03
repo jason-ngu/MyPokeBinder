@@ -30,15 +30,22 @@ CREATE TABLE pricetypes(
     pricetype_name     VARCHAR(20) UNIQUE NOT NULL
 );
 
+-- Enum for users
+CREATE TYPE provider_type AS ENUM('Google')
+
 CREATE TABLE users(
-    user_id       SERIAL PRIMARY KEY,
-    user_name     text UNIQUE NOT NULL
+    user_id         SERIAL PRIMARY KEY,
+    name           TEXT,
+    provider_key    VARCHAR(128) NOT NULL,
+    provider_type   provider_type NOT NULL,
+    UNIQUE(provider_key, provider_type)
+
 );
 
 CREATE TABLE collections(
     collection_id       SERIAL PRIMARY KEY,
     collection_name     VARCHAR(50) UNIQUE NOT NULL,
-    user_id             INT NOT NULL REFERENCES users(user_id)
+    user_id             INTEGER NOT NULL REFERENCES users(user_id)
                                         ON UPDATE CASCADE
                                         ON DELETE RESTRICT
 );
@@ -75,16 +82,22 @@ CREATE TABLE cards(
 -- Bridge tables
 
 CREATE TABLE cardtypes(
-    card_id    INT NOT NULL REFERENCES cards(card_id),
-    type_id    INT NOT NULL REFERENCES types(type_id)
+    card_id    INTEGER NOT NULL REFERENCES cards(card_id),
+    type_id    INTEGER NOT NULL REFERENCES types(type_id)
 );
 
 CREATE TABLE cardsubtypes(
-    card_id     INT NOT NULL REFERENCES cards(card_id),
-    subtype_id  INT NOT NULL REFERENCES subtypes(subtype_id)
+    card_id     INTEGER NOT NULL REFERENCES cards(card_id),
+    subtype_id  INTEGER NOT NULL REFERENCES subtypes(subtype_id)
 );
 
+-- Enum for collectioncards
+CREATE TYPE gradingcompany AS ENUM('PSA', 'BGS', 'CGC')
+
 CREATE TABLE collectioncards(
-    collection_id     INT NOT NULL REFERENCES collections(collection_id),
-    card_id           INT NOT NULL REFERENCES cards(card_id)
+    collection_id       INTEGER NOT NULL REFERENCES collections(collection_id),
+    card_id             INTEGER NOT NULL REFERENCES cards(card_id),
+    quantity            INTEGER DEFAULT 1
+    grade               INTEGER
+    grading_company     gradingcompany
 );

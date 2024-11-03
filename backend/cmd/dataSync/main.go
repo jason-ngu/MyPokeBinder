@@ -38,7 +38,7 @@ func main() {
 	}
 	env := &internal.Env{DB: db}
 
-	tcgClient := tcg.NewClient(config.ApiKey)
+	tcgClient := tcg.NewClient(config.TCGApiKey)
 
 	args := os.Args[1:]
 

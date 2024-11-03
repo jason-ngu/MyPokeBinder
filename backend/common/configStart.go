@@ -7,13 +7,19 @@ import (
 )
 
 type Configuration struct {
-	ApiKey   string
-	Database struct {
+	TCGApiKey string
+	Database  struct {
 		Host         string
 		Port         int
 		User         string
 		Password     string
 		DatabaseName string
+	}
+	Oauth struct {
+		Google struct {
+			ClientID     string
+			ClientSecret string
+		}
 	}
 }
 
