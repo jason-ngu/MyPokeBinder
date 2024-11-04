@@ -15,5 +15,5 @@ type TypesList struct {
 	TotalPages   int          `json:"total_pages"`
 	CurrentPage  int          `json:"current_page"`
 	Size         int          `json:"size"`
-	Types        []*TypeModel `json:"types"`
+	Data         []*TypeModel `json:"data"`
 }

@@ -51,7 +51,7 @@ func (r *typesRepo) GetAllTypes(ctx context.Context, query *utilities.Pagination
 			TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 			CurrentPage:  query.GetPage(),
 			Size:         query.GetSize(),
-			Types:        make([]*models.TypeModel, 0),
+			Data:         make([]*models.TypeModel, 0),
 		}, nil
 	}
 
@@ -77,6 +77,6 @@ func (r *typesRepo) GetAllTypes(ctx context.Context, query *utilities.Pagination
 		TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 		CurrentPage:  query.GetPage(),
 		Size:         query.GetSize(),
-		Types:        typesList,
+		Data:         typesList,
 	}, nil
 }
