@@ -41,4 +41,5 @@ require (
 require (
 	github.com/PokemonTCG/pokemon-tcg-sdk-go-v2 v0.1.1 // indirect
 	github.com/gin-gonic/gin v1.10.0
+	github.com/pkg/errors v0.9.1
 )

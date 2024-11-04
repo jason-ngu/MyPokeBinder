@@ -1,8 +1,5 @@
 package typesRepository
 
-// https://gist.github.com/alexedwards/d42ae90aac9dfa75046ebf8a036b080b
-// https://www.alexedwards.net/blog/organising-database-access
-
 import (
 	"backend/internal/models"
 	"database/sql"
