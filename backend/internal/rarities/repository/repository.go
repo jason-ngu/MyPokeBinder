@@ -29,9 +29,9 @@ func (r *raritiesRepo) Create(ctx context.Context, newRarity *models.RarityEntit
 	return t, nil
 }
 
-func (r *raritiesRepo) GetByID(ctx context.Context, subtypeID int) (*models.RarityModel, error) {
+func (r *raritiesRepo) GetByID(ctx context.Context, rarityID int) (*models.RarityModel, error) {
 	t := &models.RarityModel{}
-	err := r.db.QueryRowContext(ctx, getRarityById, &subtypeID).Scan(t)
+	err := r.db.QueryRowContext(ctx, getRarityById, &rarityID).Scan(t)
 	if err != nil {
 		return nil, errors.Wrap(err, "raritiesRepo.GetByID.QueryRowContext.Scan")
 	}

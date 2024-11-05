@@ -19,8 +19,8 @@ func (s *raritiesService) Create(ctx context.Context, newRarity *models.RarityEn
 	return s.raritiesRepo.Create(ctx, newRarity)
 }
 
-func (s *raritiesService) GetByID(ctx context.Context, subtypeID int) (*models.RarityModel, error) {
-	return s.raritiesRepo.GetByID(ctx, subtypeID)
+func (s *raritiesService) GetByID(ctx context.Context, rarityID int) (*models.RarityModel, error) {
+	return s.raritiesRepo.GetByID(ctx, rarityID)
 }
 
 func (s *raritiesService) GetAllRarities(ctx context.Context, query *utilities.PaginationQuery) (*models.RaritiesList, error) {
