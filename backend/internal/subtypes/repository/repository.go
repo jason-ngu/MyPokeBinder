@@ -20,7 +20,7 @@ func NewSubtypesRepository(db *sql.DB) subtypes.Repository {
 
 func (r *subtypesRepo) Create(ctx context.Context, newSubtype *models.SubtypeEntity) (*models.SubtypeEntity, error) {
 	t := &models.SubtypeEntity{}
-	row := r.db.QueryRowContext(ctx, createSubtypeQuery, &newSubtype.SubtypeName)
+	row := r.db.QueryRowContext(ctx, createSubtype, &newSubtype.SubtypeName)
 	err := row.Scan(t)
 	if err != nil {
 		return nil, errors.Wrap(err, "subtypesRepo.Create.QueryRowContext.Scan")

@@ -20,7 +20,7 @@ func NewTypesRepository(db *sql.DB) types.Repository {
 
 func (r *typesRepo) Create(ctx context.Context, newType *models.TypeEntity) (*models.TypeEntity, error) {
 	t := &models.TypeEntity{}
-	row := r.db.QueryRowContext(ctx, createTypeQuery, &newType.TypeName)
+	row := r.db.QueryRowContext(ctx, createType, &newType.TypeName)
 	err := row.Scan(t)
 	if err != nil {
 		return nil, errors.Wrap(err, "typesRepo.Create.QueryRowContext.Scan")

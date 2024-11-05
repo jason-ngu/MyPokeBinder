@@ -20,7 +20,7 @@ func NewSupertypesRepository(db *sql.DB) supertypes.Repository {
 
 func (r *supertypesRepo) Create(ctx context.Context, newSupertype *models.SupertypeEntity) (*models.SupertypeEntity, error) {
 	t := &models.SupertypeEntity{}
-	row := r.db.QueryRowContext(ctx, createSupertypeQuery, &newSupertype.SupertypeName)
+	row := r.db.QueryRowContext(ctx, createSupertype, &newSupertype.SupertypeName)
 	err := row.Scan(t)
 	if err != nil {
 		return nil, errors.Wrap(err, "supertypesRepo.Create.QueryRowContext.Scan")
