@@ -19,14 +19,14 @@ func GetAllSets(db *sql.DB) ([]models.SetModel, error) {
 	for rows.Next() {
 		var t models.SetEntity
 
-		err := rows.Scan(&t.SetID, &t.SetCode, &t.SetName, &t.SeriesId, &t.PtcgoCode,
+		err := rows.Scan(&t.SetID, &t.SetCode, &t.SetName, &t.SeriesID, &t.PtcgoCode,
 			&t.CardTotal, &t.ExtendedCardTotal, &t.SetReleaseDate, &t.SymbolImage, &t.LogoImage,
 			&t.SyncDateCreated, &t.SyncDateUpdated)
 		if err != nil {
 			return nil, err
 		}
 
-		series, err := seriesRepository.GetSeriesById(db, t.SeriesId)
+		series, err := seriesRepository.GetSeriesById(db, t.SeriesID)
 		if err != nil {
 			return nil, err
 		}
@@ -55,7 +55,7 @@ func GetSetById(db *sql.DB, id int) (models.SetModel, error) {
 	row := db.QueryRow("SELECT * FROM public.sets WHERE set_id = $1", id)
 
 	var t models.SetEntity
-	err := row.Scan(&t.SetID, &t.SetCode, &t.SetName, &t.SeriesId, &t.PtcgoCode,
+	err := row.Scan(&t.SetID, &t.SetCode, &t.SetName, &t.SeriesID, &t.PtcgoCode,
 		&t.CardTotal, &t.ExtendedCardTotal, &t.SetReleaseDate, &t.SymbolImage, &t.LogoImage,
 		&t.SyncDateCreated, &t.SyncDateUpdated)
 	if err != nil {
@@ -65,7 +65,7 @@ func GetSetById(db *sql.DB, id int) (models.SetModel, error) {
 		return models.SetModel{}, err
 	}
 
-	series, err := seriesRepository.GetSeriesById(db, t.SeriesId)
+	series, err := seriesRepository.GetSeriesById(db, t.SeriesID)
 	if err != nil {
 		return models.SetModel{}, err
 	}
@@ -92,7 +92,7 @@ func GetSetByName(db *sql.DB, setName string) (models.SetModel, error) {
 	row := db.QueryRow("SELECT * FROM public.sets WHERE set_name = $1", setName)
 
 	var t models.SetEntity
-	err := row.Scan(&t.SetID, &t.SetCode, &t.SetName, &t.SeriesId, &t.PtcgoCode,
+	err := row.Scan(&t.SetID, &t.SetCode, &t.SetName, &t.SeriesID, &t.PtcgoCode,
 		&t.CardTotal, &t.ExtendedCardTotal, &t.SetReleaseDate, &t.SymbolImage, &t.LogoImage,
 		&t.SyncDateCreated, &t.SyncDateUpdated)
 	if err != nil {
@@ -102,7 +102,7 @@ func GetSetByName(db *sql.DB, setName string) (models.SetModel, error) {
 		return models.SetModel{}, err
 	}
 
-	series, err := seriesRepository.GetSeriesById(db, t.SeriesId)
+	series, err := seriesRepository.GetSeriesById(db, t.SeriesID)
 	if err != nil {
 		return models.SetModel{}, err
 	}

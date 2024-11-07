@@ -6,7 +6,7 @@ type SetEntity struct {
 	SetID             int       `json:"set_id"`
 	SetCode           string    `json:"set_code"`
 	SetName           string    `json:"set_name"`
-	SeriesId          int       `json:"series_id"`
+	SeriesID          int       `json:"series_id"`
 	PtcgoCode         string    `json:"ptcgo_code"`
 	CardTotal         int       `json:"card_total"`
 	ExtendedCardTotal int       `json:"extended_card_total"`
@@ -28,4 +28,12 @@ type SetModel struct {
 	SetReleaseDate    time.Time
 	SymbolImage       string
 	LogoImage         string
+}
+
+type SetsList struct {
+	TotalRecords int         `json:"total_records"`
+	TotalPages   int         `json:"total_pages"`
+	CurrentPage  int         `json:"current_page"`
+	Size         int         `json:"size"`
+	Data         []*SetModel `json:"data"`
 }
