@@ -14,5 +14,12 @@ type CollectionCardsModel struct {
 	Quantity       int
 	Grade          int
 	GradingCompany string
-	// CollectionCards []CardModel
+}
+
+type CollectionCardsList struct {
+	TotalRecords int                     `json:"total_records"`
+	TotalPages   int                     `json:"total_pages"`
+	CurrentPage  int                     `json:"current_page"`
+	Size         int                     `json:"size"`
+	Data         []*CollectionCardsModel `json:"data"`
 }
