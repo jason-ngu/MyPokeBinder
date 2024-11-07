@@ -28,28 +28,28 @@ func GetAllCards(db *sql.DB) ([]models.CardModel, error) {
 	for rows.Next() {
 		var t models.CardEntity
 
-		err := rows.Scan(&t.CardID, &t.CardCode, &t.CardName, &t.SetId, &t.SupertypeId,
-			&t.RarityId, &t.MarketPrice, &t.PricetypeId, &t.Image, &t.SyncDateCreated, &t.SyncDateUpdated)
+		err := rows.Scan(&t.CardID, &t.CardCode, &t.CardName, &t.SetID, &t.SupertypeID,
+			&t.RarityID, &t.MarketPrice, &t.PricetypeID, &t.Image, &t.SyncDateCreated, &t.SyncDateUpdated)
 		if err != nil {
 			return nil, err
 		}
 
-		set, err := setsRepository.GetSetById(db, t.SetId)
+		set, err := setsRepository.GetSetById(db, t.SetID)
 		if err != nil {
 			return nil, err
 		}
 
-		supertype, err := supertypesRepository.GetSupertypeById(db, t.SupertypeId)
+		supertype, err := supertypesRepository.GetSupertypeById(db, t.SupertypeID)
 		if err != nil {
 			return nil, err
 		}
 
-		rarity, err := raritiesRepository.GetRarityById(db, t.RarityId)
+		rarity, err := raritiesRepository.GetRarityById(db, t.RarityID)
 		if err != nil {
 			return nil, err
 		}
 
-		pricetype, err := pricetypesRepository.GetPricetypeById(db, t.PricetypeId)
+		pricetype, err := pricetypesRepository.GetPricetypeById(db, t.PricetypeID)
 		if err != nil {
 			return nil, err
 		}
@@ -115,28 +115,28 @@ func SearchCards(db *sql.DB, searchParams models.CardSearchParams) ([]models.Car
 	for rows.Next() {
 		var t models.CardEntity
 
-		err := rows.Scan(&t.CardID, &t.CardCode, &t.CardName, &t.SetId, &t.SupertypeId,
-			&t.RarityId, &t.MarketPrice, &t.PricetypeId, &t.Image, &t.SyncDateCreated, &t.SyncDateUpdated)
+		err := rows.Scan(&t.CardID, &t.CardCode, &t.CardName, &t.SetID, &t.SupertypeID,
+			&t.RarityID, &t.MarketPrice, &t.PricetypeID, &t.Image, &t.SyncDateCreated, &t.SyncDateUpdated)
 		if err != nil {
 			return nil, err
 		}
 
-		set, err := setsRepository.GetSetById(db, t.SetId)
+		set, err := setsRepository.GetSetById(db, t.SetID)
 		if err != nil {
 			return nil, err
 		}
 
-		supertype, err := supertypesRepository.GetSupertypeById(db, t.SupertypeId)
+		supertype, err := supertypesRepository.GetSupertypeById(db, t.SupertypeID)
 		if err != nil {
 			return nil, err
 		}
 
-		rarity, err := raritiesRepository.GetRarityById(db, t.RarityId)
+		rarity, err := raritiesRepository.GetRarityById(db, t.RarityID)
 		if err != nil {
 			return nil, err
 		}
 
-		pricetype, err := pricetypesRepository.GetPricetypeById(db, t.PricetypeId)
+		pricetype, err := pricetypesRepository.GetPricetypeById(db, t.PricetypeID)
 		if err != nil {
 			return nil, err
 		}
@@ -172,28 +172,28 @@ func GetCardsByCardCode(db *sql.DB, cardCode string) ([]models.CardModel, error)
 	for rows.Next() {
 		var t models.CardEntity
 
-		err := rows.Scan(&t.CardID, &t.CardCode, &t.CardName, &t.SetId, &t.SupertypeId,
-			&t.RarityId, &t.MarketPrice, &t.PricetypeId, &t.Image, &t.SyncDateCreated, &t.SyncDateUpdated)
+		err := rows.Scan(&t.CardID, &t.CardCode, &t.CardName, &t.SetID, &t.SupertypeID,
+			&t.RarityID, &t.MarketPrice, &t.PricetypeID, &t.Image, &t.SyncDateCreated, &t.SyncDateUpdated)
 		if err != nil {
 			return nil, err
 		}
 
-		set, err := setsRepository.GetSetById(db, t.SetId)
+		set, err := setsRepository.GetSetById(db, t.SetID)
 		if err != nil {
 			return nil, err
 		}
 
-		supertype, err := supertypesRepository.GetSupertypeById(db, t.SupertypeId)
+		supertype, err := supertypesRepository.GetSupertypeById(db, t.SupertypeID)
 		if err != nil {
 			return nil, err
 		}
 
-		rarity, err := raritiesRepository.GetRarityById(db, t.RarityId)
+		rarity, err := raritiesRepository.GetRarityById(db, t.RarityID)
 		if err != nil {
 			return nil, err
 		}
 
-		pricetype, err := pricetypesRepository.GetPricetypeById(db, t.PricetypeId)
+		pricetype, err := pricetypesRepository.GetPricetypeById(db, t.PricetypeID)
 		if err != nil {
 			return nil, err
 		}
@@ -225,8 +225,8 @@ func GetCard(db *sql.DB, cardCode string, pricetype string) (models.CardModel, e
 		cardCode, pricetype)
 
 	var t models.CardEntity
-	err := row.Scan(&t.CardID, &t.CardCode, &t.CardName, &t.SetId, &t.SupertypeId,
-		&t.RarityId, &t.MarketPrice, &t.PricetypeId, &t.Image, &t.SyncDateCreated, &t.SyncDateUpdated)
+	err := row.Scan(&t.CardID, &t.CardCode, &t.CardName, &t.SetID, &t.SupertypeID,
+		&t.RarityID, &t.MarketPrice, &t.PricetypeID, &t.Image, &t.SyncDateCreated, &t.SyncDateUpdated)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return models.CardModel{}, nil
@@ -234,17 +234,17 @@ func GetCard(db *sql.DB, cardCode string, pricetype string) (models.CardModel, e
 		return models.CardModel{}, err
 	}
 
-	set, err := setsRepository.GetSetById(db, t.SetId)
+	set, err := setsRepository.GetSetById(db, t.SetID)
 	if err != nil {
 		return models.CardModel{}, err
 	}
 
-	supertype, err := supertypesRepository.GetSupertypeById(db, t.SupertypeId)
+	supertype, err := supertypesRepository.GetSupertypeById(db, t.SupertypeID)
 	if err != nil {
 		return models.CardModel{}, err
 	}
 
-	rarity, err := raritiesRepository.GetRarityById(db, t.RarityId)
+	rarity, err := raritiesRepository.GetRarityById(db, t.RarityID)
 	if err != nil {
 		return models.CardModel{}, err
 	}
@@ -282,28 +282,28 @@ func GetCardsById(db *sql.DB, cardIds []int) ([]models.CardModel, error) {
 	for rows.Next() {
 		var t models.CardEntity
 
-		err := rows.Scan(&t.CardID, &t.CardCode, &t.CardName, &t.SetId, &t.SupertypeId,
-			&t.RarityId, &t.MarketPrice, &t.PricetypeId, &t.Image, &t.SyncDateCreated, &t.SyncDateUpdated)
+		err := rows.Scan(&t.CardID, &t.CardCode, &t.CardName, &t.SetID, &t.SupertypeID,
+			&t.RarityID, &t.MarketPrice, &t.PricetypeID, &t.Image, &t.SyncDateCreated, &t.SyncDateUpdated)
 		if err != nil {
 			return nil, err
 		}
 
-		set, err := setsRepository.GetSetById(db, t.SetId)
+		set, err := setsRepository.GetSetById(db, t.SetID)
 		if err != nil {
 			return nil, err
 		}
 
-		supertype, err := supertypesRepository.GetSupertypeById(db, t.SupertypeId)
+		supertype, err := supertypesRepository.GetSupertypeById(db, t.SupertypeID)
 		if err != nil {
 			return nil, err
 		}
 
-		rarity, err := raritiesRepository.GetRarityById(db, t.RarityId)
+		rarity, err := raritiesRepository.GetRarityById(db, t.RarityID)
 		if err != nil {
 			return nil, err
 		}
 
-		pricetype, err := pricetypesRepository.GetPricetypeById(db, t.PricetypeId)
+		pricetype, err := pricetypesRepository.GetPricetypeById(db, t.PricetypeID)
 		if err != nil {
 			return nil, err
 		}
