@@ -27,6 +27,6 @@ func (s *cardsService) GetAllCards(ctx context.Context, searchParams models.Card
 	return s.cardsRepo.GetAllCards(ctx, searchParams, query)
 }
 
-func (s *cardsService) UpdateCard(ctx context.Context, cardToUpdate *models.CardEntity) (*models.CardEntity, error) {
-	return s.cardsRepo.UpdateCard(ctx, cardToUpdate)
+func (s *cardsService) Update(ctx context.Context, cardToUpdate *models.CardEntity) (*models.CardEntity, error) {
+	return s.cardsRepo.Update(ctx, cardToUpdate)
 }

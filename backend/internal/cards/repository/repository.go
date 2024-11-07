@@ -80,7 +80,7 @@ func (r *cardsRepo) GetAllCards(ctx context.Context, searchParams models.CardSea
 	var totalRecords int
 	err := r.db.QueryRowContext(ctx, getAllCardsCountWithSearchParams).Scan(totalRecords)
 	if err != nil {
-		return nil, errors.Wrap(err, "cardsRepo.GetAllSets.QueryRowContext")
+		return nil, errors.Wrap(err, "cardsRepo.GetAllCards.QueryRowContext")
 	}
 	if totalRecords == 0 {
 		return &models.CardsList{
@@ -95,18 +95,18 @@ func (r *cardsRepo) GetAllCards(ctx context.Context, searchParams models.CardSea
 	var cardsList []*models.CardModel
 	rows, err := r.db.QueryContext(ctx, getAllCardsWithSearchParams)
 	if err != nil {
-		return nil, errors.Wrap(err, "cardsRepo.GetAllSets.QueryContext")
+		return nil, errors.Wrap(err, "cardsRepo.GetAllCards.QueryContext")
 	}
 	for rows.Next() {
-		var set models.CardModel
-		err := rows.Scan(&set)
+		var card models.CardModel
+		err := rows.Scan(&card)
 		if err != nil {
-			return nil, errors.Wrap(err, "cardsRepo.GetAllSets.QueryContext.Scan")
+			return nil, errors.Wrap(err, "cardsRepo.GetAllCards.QueryContext.Scan")
 		}
-		cardsList = append(cardsList, &set)
+		cardsList = append(cardsList, &card)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "cardsRepo.GetAllSets.rows.Err")
+		return nil, errors.Wrap(err, "cardsRepo.GetAllCards.rows.Err")
 	}
 
 	return &models.CardsList{
@@ -118,7 +118,7 @@ func (r *cardsRepo) GetAllCards(ctx context.Context, searchParams models.CardSea
 	}, nil
 }
 
-func (r *cardsRepo) UpdateCard(ctx context.Context, cardToUpdate *models.CardEntity) (*models.CardEntity, error) {
+func (r *cardsRepo) Update(ctx context.Context, cardToUpdate *models.CardEntity) (*models.CardEntity, error) {
 	syncDateUpdated := time.Now()
 
 	card := &models.CardEntity{}
