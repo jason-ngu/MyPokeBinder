@@ -19,24 +19,24 @@ func NewSeriesRepository(db *sql.DB) series.Repository {
 }
 
 func (r *seriesRepo) Create(ctx context.Context, newSeries *models.SeriesEntity) (*models.SeriesEntity, error) {
-	t := &models.SeriesEntity{}
+	series := &models.SeriesEntity{}
 	row := r.db.QueryRowContext(ctx, createSeries, &newSeries.SeriesName)
-	err := row.Scan(t)
+	err := row.Scan(series)
 	if err != nil {
 		return nil, errors.Wrap(err, "seriesRepo.Create.QueryRowContext.Scan")
 	}
 
-	return t, nil
+	return series, nil
 }
 
 func (r *seriesRepo) GetByID(ctx context.Context, seriesID int) (*models.SeriesModel, error) {
-	t := &models.SeriesModel{}
-	err := r.db.QueryRowContext(ctx, getSeriesById, &seriesID).Scan(t)
+	series := &models.SeriesModel{}
+	err := r.db.QueryRowContext(ctx, getSeriesById, &seriesID).Scan(series)
 	if err != nil {
 		return nil, errors.Wrap(err, "seriesRepo.GetByID.QueryRowContext.Scan")
 	}
 
-	return t, nil
+	return series, nil
 }
 
 func (r *seriesRepo) GetAllSeries(ctx context.Context, query *utilities.PaginationQuery) (*models.SeriesList, error) {
@@ -55,18 +55,18 @@ func (r *seriesRepo) GetAllSeries(ctx context.Context, query *utilities.Paginati
 		}, nil
 	}
 
-	var typesList []*models.SeriesModel
+	var seriesList []*models.SeriesModel
 	rows, err := r.db.QueryContext(ctx, getAllSeries)
 	if err != nil {
 		return nil, errors.Wrap(err, "seriesRepo.GetAllSeries.QueryContext")
 	}
 	for rows.Next() {
-		var t models.SeriesModel
-		err := rows.Scan(&t)
+		var series models.SeriesModel
+		err := rows.Scan(&series)
 		if err != nil {
 			return nil, errors.Wrap(err, "seriesRepo.GetAllSeries.QueryContext.Scan")
 		}
-		typesList = append(typesList, &t)
+		seriesList = append(seriesList, &series)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "seriesRepo.GetAllSeries.rows.Err")
@@ -77,6 +77,6 @@ func (r *seriesRepo) GetAllSeries(ctx context.Context, query *utilities.Paginati
 		TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 		CurrentPage:  query.GetPage(),
 		Size:         query.GetSize(),
-		Data:         typesList,
+		Data:         seriesList,
 	}, nil
 }

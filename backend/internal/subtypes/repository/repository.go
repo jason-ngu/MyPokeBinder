@@ -19,24 +19,24 @@ func NewSubtypesRepository(db *sql.DB) subtypes.Repository {
 }
 
 func (r *subtypesRepo) Create(ctx context.Context, newSubtype *models.SubtypeEntity) (*models.SubtypeEntity, error) {
-	t := &models.SubtypeEntity{}
+	subtype := &models.SubtypeEntity{}
 	row := r.db.QueryRowContext(ctx, createSubtype, &newSubtype.SubtypeName)
-	err := row.Scan(t)
+	err := row.Scan(subtype)
 	if err != nil {
 		return nil, errors.Wrap(err, "subtypesRepo.Create.QueryRowContext.Scan")
 	}
 
-	return t, nil
+	return subtype, nil
 }
 
 func (r *subtypesRepo) GetByID(ctx context.Context, subtypeID int) (*models.SubtypeModel, error) {
-	t := &models.SubtypeModel{}
-	err := r.db.QueryRowContext(ctx, getSubtypeById, &subtypeID).Scan(t)
+	subtype := &models.SubtypeModel{}
+	err := r.db.QueryRowContext(ctx, getSubtypeById, &subtypeID).Scan(subtype)
 	if err != nil {
 		return nil, errors.Wrap(err, "subtypesRepo.GetByID.QueryRowContext.Scan")
 	}
 
-	return t, nil
+	return subtype, nil
 }
 
 func (r *subtypesRepo) GetAllSubtypes(ctx context.Context, query *utilities.PaginationQuery) (*models.SubtypesList, error) {
@@ -55,18 +55,18 @@ func (r *subtypesRepo) GetAllSubtypes(ctx context.Context, query *utilities.Pagi
 		}, nil
 	}
 
-	var typesList []*models.SubtypeModel
+	var subtypesList []*models.SubtypeModel
 	rows, err := r.db.QueryContext(ctx, getAllSubtypes)
 	if err != nil {
 		return nil, errors.Wrap(err, "subtypesRepo.GetAllSubtypes.QueryContext")
 	}
 	for rows.Next() {
-		var t models.SubtypeModel
-		err := rows.Scan(&t)
+		var subtype models.SubtypeModel
+		err := rows.Scan(&subtype)
 		if err != nil {
 			return nil, errors.Wrap(err, "subtypesRepo.GetAllSubtypes.QueryContext.Scan")
 		}
-		typesList = append(typesList, &t)
+		subtypesList = append(subtypesList, &subtype)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "subtypesRepo.GetAllSubtypes.rows.Err")
@@ -77,6 +77,6 @@ func (r *subtypesRepo) GetAllSubtypes(ctx context.Context, query *utilities.Pagi
 		TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 		CurrentPage:  query.GetPage(),
 		Size:         query.GetSize(),
-		Data:         typesList,
+		Data:         subtypesList,
 	}, nil
 }

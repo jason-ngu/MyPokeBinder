@@ -19,24 +19,24 @@ func NewPricetypesRepository(db *sql.DB) pricetypes.Repository {
 }
 
 func (r *pricetypesRepo) Create(ctx context.Context, newPricetype *models.PricetypeEntity) (*models.PricetypeEntity, error) {
-	t := &models.PricetypeEntity{}
+	pricetype := &models.PricetypeEntity{}
 	row := r.db.QueryRowContext(ctx, createPricetype, &newPricetype.PricetypeName)
-	err := row.Scan(t)
+	err := row.Scan(pricetype)
 	if err != nil {
 		return nil, errors.Wrap(err, "pricetypesRepo.Create.QueryRowContext.Scan")
 	}
 
-	return t, nil
+	return pricetype, nil
 }
 
 func (r *pricetypesRepo) GetByID(ctx context.Context, pricetypeID int) (*models.PricetypeModel, error) {
-	t := &models.PricetypeModel{}
-	err := r.db.QueryRowContext(ctx, getPricetypeById, &pricetypeID).Scan(t)
+	pricetype := &models.PricetypeModel{}
+	err := r.db.QueryRowContext(ctx, getPricetypeById, &pricetypeID).Scan(pricetype)
 	if err != nil {
 		return nil, errors.Wrap(err, "pricetypesRepo.GetByID.QueryRowContext.Scan")
 	}
 
-	return t, nil
+	return pricetype, nil
 }
 
 func (r *pricetypesRepo) GetAllPricetypes(ctx context.Context, query *utilities.PaginationQuery) (*models.PricetypesList, error) {
@@ -55,18 +55,18 @@ func (r *pricetypesRepo) GetAllPricetypes(ctx context.Context, query *utilities.
 		}, nil
 	}
 
-	var typesList []*models.PricetypeModel
+	var pricetypesList []*models.PricetypeModel
 	rows, err := r.db.QueryContext(ctx, getAllPricetypes)
 	if err != nil {
 		return nil, errors.Wrap(err, "pricetypesRepo.GetAllPricetypes.QueryContext")
 	}
 	for rows.Next() {
-		var t models.PricetypeModel
-		err := rows.Scan(&t)
+		var pricetype models.PricetypeModel
+		err := rows.Scan(&pricetype)
 		if err != nil {
 			return nil, errors.Wrap(err, "pricetypesRepo.GetAllPricetypes.QueryContext.Scan")
 		}
-		typesList = append(typesList, &t)
+		pricetypesList = append(pricetypesList, &pricetype)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "pricetypesRepo.GetAllPricetypes.rows.Err")
@@ -77,6 +77,6 @@ func (r *pricetypesRepo) GetAllPricetypes(ctx context.Context, query *utilities.
 		TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 		CurrentPage:  query.GetPage(),
 		Size:         query.GetSize(),
-		Data:         typesList,
+		Data:         pricetypesList,
 	}, nil
 }

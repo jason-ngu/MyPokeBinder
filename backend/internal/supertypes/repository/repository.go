@@ -19,24 +19,24 @@ func NewSupertypesRepository(db *sql.DB) supertypes.Repository {
 }
 
 func (r *supertypesRepo) Create(ctx context.Context, newSupertype *models.SupertypeEntity) (*models.SupertypeEntity, error) {
-	t := &models.SupertypeEntity{}
+	supertype := &models.SupertypeEntity{}
 	row := r.db.QueryRowContext(ctx, createSupertype, &newSupertype.SupertypeName)
-	err := row.Scan(t)
+	err := row.Scan(supertype)
 	if err != nil {
 		return nil, errors.Wrap(err, "supertypesRepo.Create.QueryRowContext.Scan")
 	}
 
-	return t, nil
+	return supertype, nil
 }
 
 func (r *supertypesRepo) GetByID(ctx context.Context, supertypeID int) (*models.SupertypeModel, error) {
-	t := &models.SupertypeModel{}
-	err := r.db.QueryRowContext(ctx, getSupertypeById, &supertypeID).Scan(t)
+	supertype := &models.SupertypeModel{}
+	err := r.db.QueryRowContext(ctx, getSupertypeById, &supertypeID).Scan(supertype)
 	if err != nil {
 		return nil, errors.Wrap(err, "supertypesRepo.GetByID.QueryRowContext.Scan")
 	}
 
-	return t, nil
+	return supertype, nil
 }
 
 func (r *supertypesRepo) GetAllSupertypes(ctx context.Context, query *utilities.PaginationQuery) (*models.SupertypesList, error) {
@@ -55,18 +55,18 @@ func (r *supertypesRepo) GetAllSupertypes(ctx context.Context, query *utilities.
 		}, nil
 	}
 
-	var typesList []*models.SupertypeModel
+	var supertypesList []*models.SupertypeModel
 	rows, err := r.db.QueryContext(ctx, getAllSupertypes)
 	if err != nil {
 		return nil, errors.Wrap(err, "supertypesRepo.GetAllSupertypes.QueryContext")
 	}
 	for rows.Next() {
-		var t models.SupertypeModel
-		err := rows.Scan(&t)
+		var supertype models.SupertypeModel
+		err := rows.Scan(&supertype)
 		if err != nil {
 			return nil, errors.Wrap(err, "supertypesRepo.GetAllSupertypes.QueryContext.Scan")
 		}
-		typesList = append(typesList, &t)
+		supertypesList = append(supertypesList, &supertype)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "supertypesRepo.GetAllSupertypes.rows.Err")
@@ -77,6 +77,6 @@ func (r *supertypesRepo) GetAllSupertypes(ctx context.Context, query *utilities.
 		TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 		CurrentPage:  query.GetPage(),
 		Size:         query.GetSize(),
-		Data:         typesList,
+		Data:         supertypesList,
 	}, nil
 }

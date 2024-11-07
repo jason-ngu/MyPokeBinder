@@ -19,24 +19,24 @@ func NewRaritiesRepository(db *sql.DB) rarities.Repository {
 }
 
 func (r *raritiesRepo) Create(ctx context.Context, newRarity *models.RarityEntity) (*models.RarityEntity, error) {
-	t := &models.RarityEntity{}
+	rarity := &models.RarityEntity{}
 	row := r.db.QueryRowContext(ctx, createRarity, &newRarity.RarityName)
-	err := row.Scan(t)
+	err := row.Scan(rarity)
 	if err != nil {
 		return nil, errors.Wrap(err, "raritiesRepo.Create.QueryRowContext.Scan")
 	}
 
-	return t, nil
+	return rarity, nil
 }
 
 func (r *raritiesRepo) GetByID(ctx context.Context, rarityID int) (*models.RarityModel, error) {
-	t := &models.RarityModel{}
-	err := r.db.QueryRowContext(ctx, getRarityById, &rarityID).Scan(t)
+	rarity := &models.RarityModel{}
+	err := r.db.QueryRowContext(ctx, getRarityById, &rarityID).Scan(rarity)
 	if err != nil {
 		return nil, errors.Wrap(err, "raritiesRepo.GetByID.QueryRowContext.Scan")
 	}
 
-	return t, nil
+	return rarity, nil
 }
 
 func (r *raritiesRepo) GetAllRarities(ctx context.Context, query *utilities.PaginationQuery) (*models.RaritiesList, error) {
@@ -55,18 +55,18 @@ func (r *raritiesRepo) GetAllRarities(ctx context.Context, query *utilities.Pagi
 		}, nil
 	}
 
-	var typesList []*models.RarityModel
+	var raritiesList []*models.RarityModel
 	rows, err := r.db.QueryContext(ctx, getAllRarities)
 	if err != nil {
 		return nil, errors.Wrap(err, "raritiesRepo.GetAllRarities.QueryContext")
 	}
 	for rows.Next() {
-		var t models.RarityModel
-		err := rows.Scan(&t)
+		var rarity models.RarityModel
+		err := rows.Scan(&rarity)
 		if err != nil {
 			return nil, errors.Wrap(err, "raritiesRepo.GetAllRarities.QueryContext.Scan")
 		}
-		typesList = append(typesList, &t)
+		raritiesList = append(raritiesList, &rarity)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "raritiesRepo.GetAllRarities.rows.Err")
@@ -77,6 +77,6 @@ func (r *raritiesRepo) GetAllRarities(ctx context.Context, query *utilities.Pagi
 		TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 		CurrentPage:  query.GetPage(),
 		Size:         query.GetSize(),
-		Data:         typesList,
+		Data:         raritiesList,
 	}, nil
 }

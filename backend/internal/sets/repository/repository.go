@@ -23,24 +23,24 @@ func (r *setsRepo) Create(ctx context.Context, newSet *models.SetEntity) (*model
 	syncDateCreated := time.Now()
 	syncDateUpdated := time.Now()
 
-	t := &models.SetEntity{}
+	set := &models.SetEntity{}
 	row := r.db.QueryRowContext(ctx, createSet, &newSet.SetCode, &newSet.SetName, &newSet.SeriesID, &newSet.PtcgoCode, &newSet.CardTotal, &newSet.ExtendedCardTotal, &newSet.SetReleaseDate, &newSet.SymbolImage, &newSet.LogoImage, syncDateCreated, syncDateUpdated)
-	err := row.Scan(t)
+	err := row.Scan(set)
 	if err != nil {
 		return nil, errors.Wrap(err, "setRepo.Create.QueryRowContext.Scan")
 	}
 
-	return t, nil
+	return set, nil
 }
 
 func (r *setsRepo) GetByID(ctx context.Context, setID int) (*models.SetModel, error) {
-	s := &models.SetModel{}
-	err := r.db.QueryRowContext(ctx, getSetById, &setID).Scan(s)
+	set := &models.SetModel{}
+	err := r.db.QueryRowContext(ctx, getSetById, &setID).Scan(set)
 	if err != nil {
 		return nil, errors.Wrap(err, "setRepo.GetByID.QueryRowContext.Scan")
 	}
 
-	return s, nil
+	return set, nil
 }
 
 func (r *setsRepo) GetAllSets(ctx context.Context, query *utilities.PaginationQuery) (*models.SetsList, error) {
@@ -59,18 +59,18 @@ func (r *setsRepo) GetAllSets(ctx context.Context, query *utilities.PaginationQu
 		}, nil
 	}
 
-	var typesList []*models.SetModel
+	var setsList []*models.SetModel
 	rows, err := r.db.QueryContext(ctx, getAllSets)
 	if err != nil {
 		return nil, errors.Wrap(err, "setsRepo.GetAllSets.QueryContext")
 	}
 	for rows.Next() {
-		var t models.SetModel
-		err := rows.Scan(&t)
+		var set models.SetModel
+		err := rows.Scan(&set)
 		if err != nil {
 			return nil, errors.Wrap(err, "setsRepo.GetAllSets.QueryContext.Scan")
 		}
-		typesList = append(typesList, &t)
+		setsList = append(setsList, &set)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "setsRepo.GetAllSets.rows.Err")
@@ -81,7 +81,7 @@ func (r *setsRepo) GetAllSets(ctx context.Context, query *utilities.PaginationQu
 		TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 		CurrentPage:  query.GetPage(),
 		Size:         query.GetSize(),
-		Data:         typesList,
+		Data:         setsList,
 	}, nil
 }
 
