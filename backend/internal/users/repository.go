@@ -1,0 +1,11 @@
+package users
+
+import (
+	"backend/internal/models"
+	"context"
+)
+
+type Repository interface {
+	CreateUser(ctx context.Context, newUser *models.UserEntity) (*models.UserEntity, error)
+	GetByID(ctx context.Context, userId int) (*models.UserModel, error)
+}
