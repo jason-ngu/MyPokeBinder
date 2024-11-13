@@ -7,14 +7,15 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
 type collectionsRepo struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewCardsRepository(db *sql.DB) collections.Repository {
+func NewCardsRepository(db *sqlx.DB) collections.Repository {
 	return &collectionsRepo{db: db}
 }
 

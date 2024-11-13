@@ -10,14 +10,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
 type setsRepo struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewSetsRepository(db *sql.DB) sets.Repository {
+func NewSetsRepository(db *sqlx.DB) sets.Repository {
 	return &setsRepo{db: db}
 }
 

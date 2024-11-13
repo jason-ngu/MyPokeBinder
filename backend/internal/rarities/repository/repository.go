@@ -5,16 +5,16 @@ import (
 	"backend/internal/rarities"
 	"backend/pkg/utilities"
 	"context"
-	"database/sql"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
 type raritiesRepo struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewRaritiesRepository(db *sql.DB) rarities.Repository {
+func NewRaritiesRepository(db *sqlx.DB) rarities.Repository {
 	return &raritiesRepo{db: db}
 }
 

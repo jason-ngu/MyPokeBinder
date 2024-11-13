@@ -5,17 +5,17 @@ import (
 	"backend/internal/models"
 	"backend/pkg/utilities"
 	"context"
-	"database/sql"
 	"fmt"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
 type collectioncardsRepo struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewCollectionCardsRepository(db *sql.DB) collectioncards.Repository {
+func NewCollectionCardsRepository(db *sqlx.DB) collectioncards.Repository {
 	return &collectioncardsRepo{db: db}
 }
 

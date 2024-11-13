@@ -5,18 +5,18 @@ import (
 	"backend/internal/series"
 	"backend/pkg/utilities"
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
 type seriesRepo struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewSeriesRepository(db *sql.DB) series.Repository {
+func NewSeriesRepository(db *sqlx.DB) series.Repository {
 	return &seriesRepo{db: db}
 }
 

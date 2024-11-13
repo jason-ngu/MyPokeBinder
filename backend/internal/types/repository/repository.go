@@ -5,16 +5,16 @@ import (
 	"backend/internal/types"
 	"backend/pkg/utilities"
 	"context"
-	"database/sql"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
 type typesRepo struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewTypesRepository(db *sql.DB) types.Repository {
+func NewTypesRepository(db *sqlx.DB) types.Repository {
 	return &typesRepo{db: db}
 }
 

@@ -5,16 +5,16 @@ import (
 	"backend/internal/pricetypes"
 	"backend/pkg/utilities"
 	"context"
-	"database/sql"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
 type pricetypesRepo struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewPricetypesRepository(db *sql.DB) pricetypes.Repository {
+func NewPricetypesRepository(db *sqlx.DB) pricetypes.Repository {
 	return &pricetypesRepo{db: db}
 }
 

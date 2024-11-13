@@ -5,16 +5,16 @@ import (
 	"backend/internal/subtypes"
 	"backend/pkg/utilities"
 	"context"
-	"database/sql"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
 type subtypesRepo struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewSubtypesRepository(db *sql.DB) subtypes.Repository {
+func NewSubtypesRepository(db *sqlx.DB) subtypes.Repository {
 	return &subtypesRepo{db: db}
 }
 

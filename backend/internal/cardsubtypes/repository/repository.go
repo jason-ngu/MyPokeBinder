@@ -5,16 +5,16 @@ import (
 	"backend/internal/models"
 	"backend/pkg/utilities"
 	"context"
-	"database/sql"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
 type cardsubtypesRepo struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewCardSubtypesRepository(db *sql.DB) cardsubtypes.Repository {
+func NewCardSubtypesRepository(db *sqlx.DB) cardsubtypes.Repository {
 	return &cardsubtypesRepo{db: db}
 }
 

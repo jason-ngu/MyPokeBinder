@@ -4,16 +4,16 @@ import (
 	"backend/internal/models"
 	"backend/internal/users"
 	"context"
-	"database/sql"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )
 
 type usersRepo struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewUsersRepository(db *sql.DB) users.Repository {
+func NewUsersRepository(db *sqlx.DB) users.Repository {
 	return &usersRepo{db: db}
 }
 
