@@ -41,7 +41,7 @@ func (r *collectionsRepo) GetByID(ctx context.Context, collectionID int) (*model
 
 func (r *collectionsRepo) GetAllCollectionsByUserID(ctx context.Context, userID int, query *utilities.PaginationQuery) (*models.CollectionsList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountByUserID, userID).Scan(totalRecords)
+	err := r.db.QueryRowContext(ctx, getTotalCountByUserID, userID).Scan(&totalRecords)
 	if err != nil {
 		return nil, errors.Wrap(err, "collectionsRepo.GetAllCollectionsByUserID.QueryRowContext")
 	}

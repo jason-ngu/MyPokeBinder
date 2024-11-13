@@ -78,7 +78,7 @@ func (r *cardsRepo) GetAllCards(ctx context.Context, searchParams models.CardSea
 	}
 
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getAllCardsCountWithSearchParams).Scan(totalRecords)
+	err := r.db.QueryRowContext(ctx, getAllCardsCountWithSearchParams).Scan(&totalRecords)
 	if err != nil {
 		return nil, errors.Wrap(err, "cardsRepo.GetAllCards.QueryRowContext")
 	}

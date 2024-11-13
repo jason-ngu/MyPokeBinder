@@ -36,7 +36,7 @@ func (r *collectioncardsRepo) AddCardsToCollection(ctx context.Context, collecti
 
 func (r *collectioncardsRepo) GetByCollectionID(ctx context.Context, collectionId int, query *utilities.PaginationQuery) (*models.CollectionCardsList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountByCollectionID, collectionId).Scan(totalRecords)
+	err := r.db.QueryRowContext(ctx, getTotalCountByCollectionID, collectionId).Scan(&totalRecords)
 	if err != nil {
 		return nil, errors.Wrap(err, "collectioncardsRepo.GetByCollectionID.QueryRowContext")
 	}

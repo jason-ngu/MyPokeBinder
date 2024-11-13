@@ -31,7 +31,7 @@ func (r *cardtypesRepo) Create(ctx context.Context, newCardtype *models.CardType
 
 func (r *cardtypesRepo) GetByCardID(ctx context.Context, cardID int, query *utilities.PaginationQuery) (*models.CardTypesList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountByCardID, cardID).Scan(totalRecords)
+	err := r.db.QueryRowContext(ctx, getTotalCountByCardID, cardID).Scan(&totalRecords)
 	if err != nil {
 		return nil, errors.Wrap(err, "cardtypesRepo.GetByCardID.QueryRowContext")
 	}

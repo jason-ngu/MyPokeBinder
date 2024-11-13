@@ -41,7 +41,7 @@ func (r *supertypesRepo) GetByID(ctx context.Context, supertypeID int) (*models.
 
 func (r *supertypesRepo) GetAllSupertypes(ctx context.Context, query *utilities.PaginationQuery) (*models.SupertypesList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountAllSupertypes).Scan(totalRecords)
+	err := r.db.QueryRowContext(ctx, getTotalCountAllSupertypes).Scan(&totalRecords)
 	if err != nil {
 		return nil, errors.Wrap(err, "supertypesRepo.GetAllSupertypes.QueryRowContext")
 	}

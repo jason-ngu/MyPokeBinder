@@ -41,7 +41,7 @@ func (r *pricetypesRepo) GetByID(ctx context.Context, pricetypeID int) (*models.
 
 func (r *pricetypesRepo) GetAllPricetypes(ctx context.Context, query *utilities.PaginationQuery) (*models.PricetypesList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountAllPricetypes).Scan(totalRecords)
+	err := r.db.QueryRowContext(ctx, getTotalCountAllPricetypes).Scan(&totalRecords)
 	if err != nil {
 		return nil, errors.Wrap(err, "pricetypesRepo.GetAllPricetypes.QueryRowContext")
 	}

@@ -41,7 +41,7 @@ func (r *typesRepo) GetByID(ctx context.Context, typeID int) (*models.TypeModel,
 
 func (r *typesRepo) GetAllTypes(ctx context.Context, query *utilities.PaginationQuery) (*models.TypesList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountAllTypes).Scan(totalRecords)
+	err := r.db.QueryRowContext(ctx, getTotalCountAllTypes).Scan(&totalRecords)
 	if err != nil {
 		return nil, errors.Wrap(err, "typesRepo.GetAllTypes.QueryRowContext")
 	}

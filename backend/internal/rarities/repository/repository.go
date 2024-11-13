@@ -41,7 +41,7 @@ func (r *raritiesRepo) GetByID(ctx context.Context, rarityID int) (*models.Rarit
 
 func (r *raritiesRepo) GetAllRarities(ctx context.Context, query *utilities.PaginationQuery) (*models.RaritiesList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountAllRarities).Scan(totalRecords)
+	err := r.db.QueryRowContext(ctx, getTotalCountAllRarities).Scan(&totalRecords)
 	if err != nil {
 		return nil, errors.Wrap(err, "raritiesRepo.GetAllRarities.QueryRowContext")
 	}

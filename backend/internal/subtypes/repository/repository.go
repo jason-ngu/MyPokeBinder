@@ -41,7 +41,7 @@ func (r *subtypesRepo) GetByID(ctx context.Context, subtypeID int) (*models.Subt
 
 func (r *subtypesRepo) GetAllSubtypes(ctx context.Context, query *utilities.PaginationQuery) (*models.SubtypesList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountAllSubtypes).Scan(totalRecords)
+	err := r.db.QueryRowContext(ctx, getTotalCountAllSubtypes).Scan(&totalRecords)
 	if err != nil {
 		return nil, errors.Wrap(err, "subtypesRepo.GetAllSubtypes.QueryRowContext")
 	}
