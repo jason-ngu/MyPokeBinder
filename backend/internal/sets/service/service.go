@@ -15,12 +15,16 @@ func NewSeriesService(setsRepo sets.Repository) sets.Service {
 	return &setsService{setsRepo: setsRepo}
 }
 
-func (s *setsService) Create(ctx context.Context, newSeries *models.SetEntity) (*models.SetEntity, error) {
+func (s *setsService) Create(ctx context.Context, newSeries *models.SetModel) (*models.SetModel, error) {
 	return s.setsRepo.Create(ctx, newSeries)
 }
 
 func (s *setsService) GetByID(ctx context.Context, setsID int) (*models.SetModel, error) {
 	return s.setsRepo.GetByID(ctx, setsID)
+}
+
+func (s *setsService) SearchSets(ctx context.Context, searchParams *models.SetSearchParams, query *utilities.PaginationQuery) (*models.SetsList, error) {
+	return s.setsRepo.SearchSets(ctx, searchParams, query)
 }
 
 func (s *setsService) GetAllSets(ctx context.Context, query *utilities.PaginationQuery) (*models.SetsList, error) {

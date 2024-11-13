@@ -35,7 +35,7 @@ func GetAllSets(db *sql.DB) ([]models.SetModel, error) {
 			SetID:             t.SetID,
 			SetName:           t.SetName,
 			SetCode:           t.SetCode,
-			SeriesName:        series.SeriesName,
+			Series:            &models.SeriesModel{SeriesID: t.SeriesID, SeriesName: series.SeriesName},
 			PtcgoCode:         t.PtcgoCode,
 			CardTotal:         t.CardTotal,
 			ExtendedCardTotal: t.ExtendedCardTotal,
@@ -74,7 +74,7 @@ func GetSetById(db *sql.DB, id int) (models.SetModel, error) {
 		SetID:             t.SetID,
 		SetName:           t.SetName,
 		SetCode:           t.SetCode,
-		SeriesName:        series.SeriesName,
+		Series:            &models.SeriesModel{SeriesID: t.SeriesID, SeriesName: series.SeriesName},
 		PtcgoCode:         t.PtcgoCode,
 		CardTotal:         t.CardTotal,
 		ExtendedCardTotal: t.ExtendedCardTotal,
@@ -111,7 +111,7 @@ func GetSetByName(db *sql.DB, setName string) (models.SetModel, error) {
 		SetID:             t.SetID,
 		SetName:           t.SetName,
 		SetCode:           t.SetCode,
-		SeriesName:        series.SeriesName,
+		Series:            &models.SeriesModel{SeriesID: t.SeriesID, SeriesName: series.SeriesName},
 		PtcgoCode:         t.PtcgoCode,
 		CardTotal:         t.CardTotal,
 		ExtendedCardTotal: t.ExtendedCardTotal,
@@ -130,7 +130,7 @@ func CreateSet(db *sql.DB, newSet models.SetModel) (models.SetModel, error) {
 	syncDateCreated := time.Now()
 	syncDateUpdated := time.Now()
 
-	series, err := seriesRepository.GetSeriesByName(db, newSet.SeriesName)
+	series, err := seriesRepository.GetSeriesByName(db, newSet.Series.SeriesName)
 	if err != nil {
 		return models.SetModel{}, err
 	}

@@ -10,6 +10,10 @@ type SeriesModel struct {
 	SeriesName string
 }
 
+type SeriesSearchParams struct {
+	SeriesName string
+}
+
 type SeriesList struct {
 	TotalRecords int            `json:"total_records"`
 	TotalPages   int            `json:"total_pages"`

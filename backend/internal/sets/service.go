@@ -7,8 +7,9 @@ import (
 )
 
 type Service interface {
-	Create(ctx context.Context, newSet *models.SetEntity) (*models.SetEntity, error)
+	Create(ctx context.Context, newSet *models.SetModel) (*models.SetModel, error)
 	GetByID(ctx context.Context, setID int) (*models.SetModel, error)
+	SearchSets(ctx context.Context, searchParams *models.SetSearchParams, query *utilities.PaginationQuery) (*models.SetsList, error)
 	GetAllSets(ctx context.Context, query *utilities.PaginationQuery) (*models.SetsList, error)
 	Delete(ctx context.Context, setID int) error
 }

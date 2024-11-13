@@ -21,13 +21,20 @@ type SetModel struct {
 	SetID             int
 	SetName           string
 	SetCode           string
-	SeriesName        string
+	Series            *SeriesModel
 	PtcgoCode         string
 	CardTotal         int
 	ExtendedCardTotal int
 	SetReleaseDate    time.Time
 	SymbolImage       string
 	LogoImage         string
+}
+
+type SetSearchParams struct {
+	SetName    string
+	SetCode    string
+	SeriesName string
+	PtcgoCode  string
 }
 
 type SetsList struct {
