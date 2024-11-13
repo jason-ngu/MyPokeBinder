@@ -9,6 +9,13 @@ type PaginationQuery struct {
 	Page int `json:"page"`
 }
 
+func NewPaginationQuery(size int, page int) *PaginationQuery {
+	return &PaginationQuery{
+		Size: size,
+		Page: page,
+	}
+}
+
 func (p *PaginationQuery) GetSize() int {
 	return p.Size
 }
