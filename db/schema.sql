@@ -31,7 +31,7 @@ CREATE TABLE pricetypes(
 );
 
 -- Enum for users
-CREATE TYPE provider_type AS ENUM('Google')
+CREATE TYPE provider_type AS ENUM('Google');
 
 CREATE TABLE users(
     user_id         SERIAL PRIMARY KEY,
@@ -92,12 +92,12 @@ CREATE TABLE cardsubtypes(
 );
 
 -- Enum for collectioncards
-CREATE TYPE gradingcompany AS ENUM('PSA', 'BGS', 'CGC')
+CREATE TYPE gradingcompany AS ENUM('PSA', 'BGS', 'CGC');
 
 CREATE TABLE collectioncards(
     collection_id       INTEGER NOT NULL REFERENCES collections(collection_id),
     card_id             INTEGER NOT NULL REFERENCES cards(card_id),
-    quantity            INTEGER DEFAULT 1
-    grade               INTEGER
+    quantity            INTEGER DEFAULT 1,
+    grade               INTEGER,
     grading_company     gradingcompany
 );
