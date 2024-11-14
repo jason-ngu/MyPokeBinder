@@ -27,44 +27,30 @@ func (r *setsRepo) Create(ctx context.Context, newSet *models.SetModel) (*models
 	syncDateUpdated := time.Now()
 
 	set := &models.SetEntity{}
-	row := r.db.QueryRowContext(ctx, createSet, &newSet.SetCode, &newSet.SetName, &newSet.Series.SeriesID, &newSet.PtcgoCode, &newSet.CardTotal, &newSet.ExtendedCardTotal, &newSet.SetReleaseDate, &newSet.SymbolImage, &newSet.LogoImage, syncDateCreated, syncDateUpdated)
-	err := row.Scan(set)
+	row := r.db.QueryRowxContext(ctx, createSet, &newSet.SetCode, &newSet.SetName, &newSet.Series.SeriesID, &newSet.PtcgoCode, &newSet.CardTotal, &newSet.ExtendedCardTotal, &newSet.SetReleaseDate, &newSet.SymbolImage, &newSet.LogoImage, syncDateCreated, syncDateUpdated)
+	err := row.StructScan(set)
 	if err != nil {
-		return nil, errors.Wrap(err, "setRepo.Create.QueryRowContext.Scan")
+		return nil, errors.Wrap(err, "setRepo.Create.QueryRowxContext.StructScan")
 	}
 
-	return &models.SetModel{
-		SetID:             set.SetID,
-		SetCode:           newSet.SetCode,
-		SetName:           newSet.SetName,
-		Series:            newSet.Series,
-		PtcgoCode:         newSet.PtcgoCode,
-		CardTotal:         newSet.CardTotal,
-		ExtendedCardTotal: newSet.ExtendedCardTotal,
-		SetReleaseDate:    newSet.SetReleaseDate,
-		SymbolImage:       newSet.SymbolImage,
-		LogoImage:         newSet.LogoImage,
-	}, nil
+	return r.GetByID(ctx, set.SetID)
 }
 
 func (r *setsRepo) GetByID(ctx context.Context, setID int) (*models.SetModel, error) {
 	set := &models.SetModel{}
-	err := r.db.QueryRowContext(ctx, getSetById, setID).Scan(set)
+	row := r.db.QueryRowxContext(ctx, getSetById, setID)
+	err := row.StructScan(set)
 	if err != nil {
-		return nil, errors.Wrap(err, "setRepo.GetByID.QueryRowContext.Scan")
+		return nil, errors.Wrap(err, "setRepo.GetByID.QueryRowxContext.StructScan")
 	}
 
 	return set, nil
 }
 
 func (r *setsRepo) SearchSets(ctx context.Context, searchParams *models.SetSearchParams, query *utilities.PaginationQuery) (*models.SetsList, error) {
-	getAllSetsCountWithSearchParams := getTotalCountAllSets
-	getAllSetsWithSearchParams := getAllSets
-
 	var whereFilters []string
+	var whereFiltersStr string
 	if searchParams != nil {
-		getAllSetsCountWithSearchParams += " WHERE "
-		getAllSetsWithSearchParams += " WHERE "
 		if searchParams.SetName != "" {
 			formattedSetName := utilities.FormatStringForDatabase(searchParams.SetName)
 			whereFilters = append(whereFilters, fmt.Sprintf("set_name = '%s'", formattedSetName))
@@ -78,14 +64,15 @@ func (r *setsRepo) SearchSets(ctx context.Context, searchParams *models.SetSearc
 		if searchParams.PtcgoCode != "" {
 			whereFilters = append(whereFilters, fmt.Sprintf("ptcgo_code = '%s'", searchParams.PtcgoCode))
 		}
-		getAllSetsCountWithSearchParams += strings.Join(whereFilters, " AND ")
-		getAllSetsWithSearchParams += strings.Join(whereFilters, " AND ")
+		whereFiltersStr = " WHERE " + strings.Join(whereFilters, " AND ")
 	}
+	getTotalCountAllSetsParams := fmt.Sprintf(getTotalCountAllSets, whereFiltersStr)
+	getAllSetsParams := fmt.Sprintf(getAllSets, whereFiltersStr, query.GetOffset(), query.GetLimit())
 
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getAllSetsCountWithSearchParams).Scan(&totalRecords)
+	err := r.db.GetContext(ctx, &totalRecords, getTotalCountAllSetsParams)
 	if err != nil {
-		return nil, errors.Wrap(err, "setsRepo.SearchSets.QueryRowContext")
+		return nil, errors.Wrap(err, "setsRepo.SearchSets.GetContext")
 	}
 	if totalRecords == 0 {
 		return &models.SetsList{
@@ -93,26 +80,14 @@ func (r *setsRepo) SearchSets(ctx context.Context, searchParams *models.SetSearc
 			TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 			CurrentPage:  query.GetPage(),
 			Size:         query.GetSize(),
-			Data:         make([]*models.SetModel, 0),
+			Data:         make([]models.SetModel, 0),
 		}, nil
 	}
 
-	var setsList []*models.SetModel
-	rows, err := r.db.QueryContext(ctx, getAllSetsWithSearchParams)
+	var setsList []models.SetModel
+	err = r.db.SelectContext(ctx, &setsList, getAllSetsParams)
 	if err != nil {
-		return nil, errors.Wrap(err, "setsRepo.SearchSets.QueryContext")
-	}
-	for rows.Next() {
-		set := &models.SetModel{}
-		err := rows.Scan(set)
-		// err := rows.Scan(&set.SetID, &set.SetName, &set.SetCode, &set.Series, &set.PtcgoCode, &set.CardTotal, &set.ExtendedCardTotal, &set.SetReleaseDate, &set.SymbolImage, &set.LogoImage)
-		if err != nil {
-			return nil, errors.Wrap(err, "setsRepo.SearchSets.QueryContext.Scan")
-		}
-		setsList = append(setsList, set)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "setsRepo.SearchSets.rows.Err")
+		return nil, errors.Wrap(err, "setsRepo.SearchSets.SelectContext")
 	}
 
 	return &models.SetsList{
@@ -126,9 +101,9 @@ func (r *setsRepo) SearchSets(ctx context.Context, searchParams *models.SetSearc
 
 func (r *setsRepo) GetAllSets(ctx context.Context, query *utilities.PaginationQuery) (*models.SetsList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountAllSets).Scan(&totalRecords)
+	err := r.db.GetContext(ctx, &totalRecords, getTotalCountAllSets)
 	if err != nil {
-		return nil, errors.Wrap(err, "setsRepo.GetAllSets.QueryRowContext")
+		return nil, errors.Wrap(err, "setsRepo.GetAllSets.GetContext")
 	}
 	if totalRecords == 0 {
 		return &models.SetsList{
@@ -136,25 +111,14 @@ func (r *setsRepo) GetAllSets(ctx context.Context, query *utilities.PaginationQu
 			TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 			CurrentPage:  query.GetPage(),
 			Size:         query.GetSize(),
-			Data:         make([]*models.SetModel, 0),
+			Data:         make([]models.SetModel, 0),
 		}, nil
 	}
 
-	var setsList []*models.SetModel
-	rows, err := r.db.QueryContext(ctx, getAllSets)
+	var setsList []models.SetModel
+	err = r.db.SelectContext(ctx, &setsList, getAllSets, query.GetOffset(), query.GetLimit())
 	if err != nil {
-		return nil, errors.Wrap(err, "setsRepo.GetAllSets.QueryContext")
-	}
-	for rows.Next() {
-		var set models.SetModel
-		err := rows.Scan(&set)
-		if err != nil {
-			return nil, errors.Wrap(err, "setsRepo.GetAllSets.QueryContext.Scan")
-		}
-		setsList = append(setsList, &set)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "setsRepo.GetAllSets.rows.Err")
+		return nil, errors.Wrap(err, "setsRepo.GetAllSets.SelectContext")
 	}
 
 	return &models.SetsList{
@@ -178,7 +142,7 @@ func (r *setsRepo) Delete(ctx context.Context, setID int) error {
 	}
 
 	if rowsAffected == 0 {
-		return errors.Wrap(sql.ErrNoRows, "setsRepo.Delete.rowsAffected")
+		return errors.Wrap(sql.ErrNoRows, "setsRepo.Delete.rowsAffectedCount")
 	}
 
 	return nil

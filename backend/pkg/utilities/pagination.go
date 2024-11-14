@@ -24,6 +24,17 @@ func (p *PaginationQuery) GetPage() int {
 	return p.Page
 }
 
+func (p *PaginationQuery) GetOffset() int {
+	if p.Page == 0 {
+		return 0
+	}
+	return (p.Page - 1) * p.Size
+}
+
+func (p *PaginationQuery) GetLimit() int {
+	return p.Size
+}
+
 // Get total pages int
 func GetTotalPages(totalCount int, pageSize int) int {
 	d := float64(totalCount) / float64(pageSize)
