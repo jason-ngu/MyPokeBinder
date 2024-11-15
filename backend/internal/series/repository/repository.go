@@ -32,10 +32,9 @@ func (r *seriesRepo) Create(ctx context.Context, newSeries *models.SeriesModel) 
 
 func (r *seriesRepo) GetByID(ctx context.Context, seriesID int) (*models.SeriesModel, error) {
 	series := &models.SeriesModel{}
-	row := r.db.QueryRowxContext(ctx, getSeriesById, seriesID)
-	err := row.StructScan(series)
+	err := r.db.GetContext(ctx, series, getSeriesById, seriesID)
 	if err != nil {
-		return nil, errors.Wrap(err, "seriesRepo.GetByID.QueryRowxContext.StructScan")
+		return nil, errors.Wrap(err, "seriesRepo.GetByID.GetContext")
 	}
 
 	return series, nil

@@ -32,10 +32,9 @@ func (r *typesRepo) Create(ctx context.Context, newType *models.TypeModel) (*mod
 
 func (r *typesRepo) GetByID(ctx context.Context, typeID int) (*models.TypeModel, error) {
 	t := &models.TypeModel{}
-	row := r.db.QueryRowxContext(ctx, getTypeById, &typeID)
-	err := row.StructScan(t)
+	err := r.db.GetContext(ctx, t, getTypeById, typeID)
 	if err != nil {
-		return nil, errors.Wrap(err, "typesRepo.GetByID.QueryRowxContext.StructScan")
+		return nil, errors.Wrap(err, "typesRepo.GetByID.GetContext")
 	}
 
 	return t, nil

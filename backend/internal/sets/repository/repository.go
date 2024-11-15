@@ -37,10 +37,9 @@ func (r *setsRepo) Create(ctx context.Context, newSet *models.SetModel) (*models
 
 func (r *setsRepo) GetByID(ctx context.Context, setID int) (*models.SetModel, error) {
 	set := &models.SetModel{}
-	row := r.db.QueryRowxContext(ctx, getSetById, setID)
-	err := row.StructScan(set)
+	err := r.db.GetContext(ctx, set, getSetById, setID)
 	if err != nil {
-		return nil, errors.Wrap(err, "setRepo.GetByID.QueryRowxContext.StructScan")
+		return nil, errors.Wrap(err, "setRepo.GetByID.GetContext")
 	}
 
 	return set, nil
