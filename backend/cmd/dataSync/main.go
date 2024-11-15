@@ -8,6 +8,8 @@ import (
 	setsService "backend/internal/sets/service"
 	subtypesRepo "backend/internal/subtypes/repository"
 	subtypesService "backend/internal/subtypes/service"
+	supertypesRepo "backend/internal/supertypes/repository"
+	supertypesService "backend/internal/supertypes/service"
 	"context"
 	"strings"
 	"time"
@@ -55,7 +57,7 @@ func main() {
 	seriesRepo := seriesRepo.NewSeriesRepository(db)
 	setsRepo := setsRepo.NewSetsRepository(db)
 	subtypesRepo := subtypesRepo.NewSubtypesRepository(db)
-	// supertypesRepo := supertypesRepo.NewSupertypesRepository(db)
+	supertypesRepo := supertypesRepo.NewSupertypesRepository(db)
 	typesRepo := typesRepo.NewTypesRepository(db)
 
 	// Init services
@@ -64,7 +66,7 @@ func main() {
 	seriesService := seriesService.NewSeriesService(seriesRepo)
 	setsService := setsService.NewSeriesService(setsRepo)
 	subtypesService := subtypesService.NewSubtypesService(subtypesRepo)
-	// superTypesService := superTypesService.NewSupertypesService(supertypesRepo)
+	supertypesService := supertypesService.NewSupertypesService(supertypesRepo)
 	typesService := typesService.NewTypesService(typesRepo)
 
 	args := os.Args[1:]
@@ -173,7 +175,7 @@ func main() {
 		// Sync Subtypes
 		subtypes, err := tcgClient.GetSubTypes()
 		if err != nil {
-			log.Fatalf("Error getting types from API: %v", err)
+			log.Fatalf("Error getting subtypes from API: %v", err)
 		}
 		for _, curSubtype := range subtypes {
 			var subtypeLookup *models.SubtypesList
@@ -197,6 +199,31 @@ func main() {
 			}
 		}
 		// Sync Supertypes
+		supertypes, err := tcgClient.GetSuperTypes()
+		if err != nil {
+			log.Fatalf("Error getting supertypes from API: %v", err)
+		}
+		for _, curSupertype := range supertypes {
+			var supertypeLookup *models.SupertypesList
+			supertypeSearchParams := models.SupertypeSearchParams{
+				SupertypeName: curSupertype,
+			}
+			supertypeLookup, err := supertypesService.Search(ctx, &supertypeSearchParams, utilities.NewPaginationQuery(1, 1))
+			if err != nil {
+				log.Fatalf("Error searching supertypes %v", err)
+			}
+			if supertypeLookup.TotalRecords == 0 {
+				// If type does not exist, create the type
+				newsupertype := models.SupertypeModel{
+					SupertypeName: curSupertype,
+				}
+				createdsupertype, err := supertypesService.Create(ctx, &newsupertype)
+				if err != nil {
+					log.Fatalf("Error creating Supertypes: %v", err)
+				}
+				log.Printf("Created new Supertypes: %s", createdsupertype.SupertypeName)
+			}
+		}
 		// Sync Rarities
 		// Pricetypes will remain constant
 		log.Printf("Full Sync Complete at: %s", time.Now().String())
