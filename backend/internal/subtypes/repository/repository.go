@@ -5,6 +5,7 @@ import (
 	"backend/internal/subtypes"
 	"backend/pkg/utilities"
 	"context"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -18,32 +19,36 @@ func NewSubtypesRepository(db *sqlx.DB) subtypes.Repository {
 	return &subtypesRepo{db: db}
 }
 
-func (r *subtypesRepo) Create(ctx context.Context, newSubtype *models.SubtypeEntity) (*models.SubtypeEntity, error) {
+func (r *subtypesRepo) Create(ctx context.Context, newSubtype *models.SubtypeModel) (*models.SubtypeModel, error) {
 	subtype := &models.SubtypeEntity{}
-	row := r.db.QueryRowContext(ctx, createSubtype, &newSubtype.SubtypeName)
-	err := row.Scan(subtype)
+	row := r.db.QueryRowxContext(ctx, createSubtype, &newSubtype.SubtypeName)
+	err := row.StructScan(subtype)
 	if err != nil {
-		return nil, errors.Wrap(err, "subtypesRepo.Create.QueryRowContext.Scan")
+		return nil, errors.Wrap(err, "subtypesRepo.Create.QueryRowxContext.StructScan")
 	}
 
-	return subtype, nil
+	return r.GetByID(ctx, subtype.SubtypeID)
 }
 
 func (r *subtypesRepo) GetByID(ctx context.Context, subtypeID int) (*models.SubtypeModel, error) {
 	subtype := &models.SubtypeModel{}
-	err := r.db.QueryRowContext(ctx, getSubtypeById, &subtypeID).Scan(subtype)
+	err := r.db.GetContext(ctx, subtype, getSubtypeById, subtypeID)
 	if err != nil {
-		return nil, errors.Wrap(err, "subtypesRepo.GetByID.QueryRowContext.Scan")
+		return nil, errors.Wrap(err, "subtypesRepo.GetByID.GetContext")
 	}
 
 	return subtype, nil
 }
 
-func (r *subtypesRepo) GetAllSubtypes(ctx context.Context, query *utilities.PaginationQuery) (*models.SubtypesList, error) {
+func (r *subtypesRepo) SearchSubtypes(ctx context.Context, searchParams *models.SubtypeSearchParams, query *utilities.PaginationQuery) (*models.SubtypesList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountAllSubtypes).Scan(&totalRecords)
+	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllSubtypes)
 	if err != nil {
-		return nil, errors.Wrap(err, "subtypesRepo.GetAllSubtypes.QueryRowContext")
+		return nil, errors.Wrap(err, "subtypesRepo.SearchSubtypes.PrepareNamedContext.getTotalCountAllSubtypes")
+	}
+	err = nstmt.GetContext(ctx, &totalRecords, &searchParams)
+	if err != nil {
+		return nil, errors.Wrap(err, "subtypesRepo.SearchSubtypes.GetContext")
 	}
 	if totalRecords == 0 {
 		return &models.SubtypesList{
@@ -51,25 +56,49 @@ func (r *subtypesRepo) GetAllSubtypes(ctx context.Context, query *utilities.Pagi
 			TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 			CurrentPage:  query.GetPage(),
 			Size:         query.GetSize(),
-			Data:         make([]*models.SubtypeModel, 0),
+			Data:         make([]models.SubtypeModel, 0),
 		}, nil
 	}
 
-	var subtypesList []*models.SubtypeModel
-	rows, err := r.db.QueryContext(ctx, getAllSubtypes)
+	var subtypesList []models.SubtypeModel
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllSubtypes, query.GetOffset(), query.GetLimit()))
 	if err != nil {
-		return nil, errors.Wrap(err, "subtypesRepo.GetAllSubtypes.QueryContext")
+		return nil, errors.Wrap(err, "subtypesRepo.SearchSubtypes.PrepareNamedContext.getAllSubtypes")
 	}
-	for rows.Next() {
-		var subtype models.SubtypeModel
-		err := rows.Scan(&subtype)
-		if err != nil {
-			return nil, errors.Wrap(err, "subtypesRepo.GetAllSubtypes.QueryContext.Scan")
-		}
-		subtypesList = append(subtypesList, &subtype)
+	err = nstmt.SelectContext(ctx, &subtypesList, &searchParams)
+	if err != nil {
+		return nil, errors.Wrap(err, "subtypesRepo.SearchSubtypes.SelectContext")
 	}
-	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "subtypesRepo.GetAllSubtypes.rows.Err")
+
+	return &models.SubtypesList{
+		TotalRecords: totalRecords,
+		TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
+		CurrentPage:  query.GetPage(),
+		Size:         query.GetSize(),
+		Data:         subtypesList,
+	}, nil
+}
+
+func (r *subtypesRepo) GetAllSubtypes(ctx context.Context, query *utilities.PaginationQuery) (*models.SubtypesList, error) {
+	var totalRecords int
+	err := r.db.GetContext(ctx, &totalRecords, getTotalCountAllSubtypes)
+	if err != nil {
+		return nil, errors.Wrap(err, "subtypesRepo.GetAllSubtypes.GetContext")
+	}
+	if totalRecords == 0 {
+		return &models.SubtypesList{
+			TotalRecords: totalRecords,
+			TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
+			CurrentPage:  query.GetPage(),
+			Size:         query.GetSize(),
+			Data:         make([]models.SubtypeModel, 0),
+		}, nil
+	}
+
+	var subtypesList []models.SubtypeModel
+	err = r.db.SelectContext(ctx, &subtypesList, fmt.Sprintf(getAllSubtypes, query.GetOffset(), query.GetLimit()))
+	if err != nil {
+		return nil, errors.Wrap(err, "subtypesRepo.GetAllSubtypes.SelectContext")
 	}
 
 	return &models.SubtypesList{

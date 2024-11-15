@@ -6,6 +6,8 @@ import (
 	seriesRepo "backend/internal/series/repository"
 	seriesService "backend/internal/series/service"
 	setsService "backend/internal/sets/service"
+	subtypesRepo "backend/internal/subtypes/repository"
+	subtypesService "backend/internal/subtypes/service"
 	"context"
 	"strings"
 	"time"
@@ -52,7 +54,7 @@ func main() {
 	// raritiesRepo := raritiesRepo.NewRaritiesRepository(db)
 	seriesRepo := seriesRepo.NewSeriesRepository(db)
 	setsRepo := setsRepo.NewSetsRepository(db)
-	// subtypesRepo := subtypesRepo.NewSubtypesRepository(db)
+	subtypesRepo := subtypesRepo.NewSubtypesRepository(db)
 	// supertypesRepo := supertypesRepo.NewSupertypesRepository(db)
 	typesRepo := typesRepo.NewTypesRepository(db)
 
@@ -61,7 +63,7 @@ func main() {
 	// raritiesService := raritiesService.NewRaritiesService(raritiesRepo)
 	seriesService := seriesService.NewSeriesService(seriesRepo)
 	setsService := setsService.NewSeriesService(setsRepo)
-	// subtypesService := subtypesService.NewSubtypesService(subtypesRepo)
+	subtypesService := subtypesService.NewSubtypesService(subtypesRepo)
 	// superTypesService := superTypesService.NewSupertypesService(supertypesRepo)
 	typesService := typesService.NewTypesService(typesRepo)
 
@@ -169,6 +171,31 @@ func main() {
 			}
 		}
 		// Sync Subtypes
+		subtypes, err := tcgClient.GetSubTypes()
+		if err != nil {
+			log.Fatalf("Error getting types from API: %v", err)
+		}
+		for _, curSubtype := range subtypes {
+			var subtypeLookup *models.SubtypesList
+			subtypeSearchParams := models.SubtypeSearchParams{
+				SubtypeName: curSubtype,
+			}
+			subtypeLookup, err := subtypesService.SearchSubtypes(ctx, &subtypeSearchParams, utilities.NewPaginationQuery(1, 1))
+			if err != nil {
+				log.Fatalf("Error searching subtypes %v", err)
+			}
+			if subtypeLookup.TotalRecords == 0 {
+				// If type does not exist, create the type
+				newSubtype := models.SubtypeModel{
+					SubtypeName: curSubtype,
+				}
+				createdSubtype, err := subtypesService.Create(ctx, &newSubtype)
+				if err != nil {
+					log.Fatalf("Error creating Subtype: %v", err)
+				}
+				log.Printf("Created new Subtype: %s", createdSubtype.SubtypeName)
+			}
+		}
 		// Sync Supertypes
 		// Sync Rarities
 		// Pricetypes will remain constant
