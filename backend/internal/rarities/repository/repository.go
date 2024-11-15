@@ -5,6 +5,7 @@ import (
 	"backend/internal/rarities"
 	"backend/pkg/utilities"
 	"context"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -18,32 +19,36 @@ func NewRaritiesRepository(db *sqlx.DB) rarities.Repository {
 	return &raritiesRepo{db: db}
 }
 
-func (r *raritiesRepo) Create(ctx context.Context, newRarity *models.RarityEntity) (*models.RarityEntity, error) {
+func (r *raritiesRepo) Create(ctx context.Context, newRarity *models.RarityModel) (*models.RarityModel, error) {
 	rarity := &models.RarityEntity{}
-	row := r.db.QueryRowContext(ctx, createRarity, &newRarity.RarityName)
-	err := row.Scan(rarity)
+	row := r.db.QueryRowxContext(ctx, createRarity, &newRarity.RarityName)
+	err := row.StructScan(rarity)
 	if err != nil {
-		return nil, errors.Wrap(err, "raritiesRepo.Create.QueryRowContext.Scan")
+		return nil, errors.Wrap(err, "raritiesRepo.Create.QueryRowxContext.StructScan")
 	}
 
-	return rarity, nil
+	return r.GetByID(ctx, rarity.RarityID)
 }
 
 func (r *raritiesRepo) GetByID(ctx context.Context, rarityID int) (*models.RarityModel, error) {
 	rarity := &models.RarityModel{}
-	err := r.db.QueryRowContext(ctx, getRarityById, &rarityID).Scan(rarity)
+	err := r.db.GetContext(ctx, rarity, getRarityById, rarityID)
 	if err != nil {
-		return nil, errors.Wrap(err, "raritiesRepo.GetByID.QueryRowContext.Scan")
+		return nil, errors.Wrap(err, "raritiesRepo.GetByID.GetContext")
 	}
 
 	return rarity, nil
 }
 
-func (r *raritiesRepo) GetAllRarities(ctx context.Context, query *utilities.PaginationQuery) (*models.RaritiesList, error) {
+func (r *raritiesRepo) Search(ctx context.Context, searchParams *models.RaritySearchParams, query *utilities.PaginationQuery) (*models.RaritiesList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountAllRarities).Scan(&totalRecords)
+	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllRarities)
 	if err != nil {
-		return nil, errors.Wrap(err, "raritiesRepo.GetAllRarities.QueryRowContext")
+		return nil, errors.Wrap(err, "raritiesRepo.Search.PrepareNamedContext.getTotalCountAllRarities")
+	}
+	err = nstmt.GetContext(ctx, &totalRecords, &searchParams)
+	if err != nil {
+		return nil, errors.Wrap(err, "raritiesRepo.Search.GetContext")
 	}
 	if totalRecords == 0 {
 		return &models.RaritiesList{
@@ -51,25 +56,49 @@ func (r *raritiesRepo) GetAllRarities(ctx context.Context, query *utilities.Pagi
 			TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 			CurrentPage:  query.GetPage(),
 			Size:         query.GetSize(),
-			Data:         make([]*models.RarityModel, 0),
+			Data:         make([]models.RarityModel, 0),
 		}, nil
 	}
 
-	var raritiesList []*models.RarityModel
-	rows, err := r.db.QueryContext(ctx, getAllRarities)
+	var raritiesList []models.RarityModel
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllRarities, query.GetOffset(), query.GetLimit()))
 	if err != nil {
-		return nil, errors.Wrap(err, "raritiesRepo.GetAllRarities.QueryContext")
+		return nil, errors.Wrap(err, "raritiesRepo.Search.PrepareNamedContext.getAllRarities")
 	}
-	for rows.Next() {
-		var rarity models.RarityModel
-		err := rows.Scan(&rarity)
-		if err != nil {
-			return nil, errors.Wrap(err, "raritiesRepo.GetAllRarities.QueryContext.Scan")
-		}
-		raritiesList = append(raritiesList, &rarity)
+	err = nstmt.SelectContext(ctx, &raritiesList, &searchParams)
+	if err != nil {
+		return nil, errors.Wrap(err, "raritiesRepo.Search.SelectContext")
 	}
-	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "raritiesRepo.GetAllRarities.rows.Err")
+
+	return &models.RaritiesList{
+		TotalRecords: totalRecords,
+		TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
+		CurrentPage:  query.GetPage(),
+		Size:         query.GetSize(),
+		Data:         raritiesList,
+	}, nil
+}
+
+func (r *raritiesRepo) GetAllRarities(ctx context.Context, query *utilities.PaginationQuery) (*models.RaritiesList, error) {
+	var totalRecords int
+	err := r.db.GetContext(ctx, &totalRecords, getTotalCountAllRarities)
+	if err != nil {
+		return nil, errors.Wrap(err, "raritiesRepo.GetAllRarities.GetContext")
+	}
+	if totalRecords == 0 {
+		return &models.RaritiesList{
+			TotalRecords: totalRecords,
+			TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
+			CurrentPage:  query.GetPage(),
+			Size:         query.GetSize(),
+			Data:         make([]models.RarityModel, 0),
+		}, nil
+	}
+
+	var raritiesList []models.RarityModel
+	err = r.db.SelectContext(ctx, &raritiesList, fmt.Sprintf(getAllRarities, query.GetOffset(), query.GetLimit()))
+	if err != nil {
+		return nil, errors.Wrap(err, "raritiesRepo.GetAllRarities.SelectContext")
 	}
 
 	return &models.RaritiesList{

@@ -3,6 +3,8 @@ package main
 import (
 	"backend/config"
 	"backend/internal/models"
+	raritiesRepo "backend/internal/rarities/repository"
+	raritiesService "backend/internal/rarities/service"
 	seriesRepo "backend/internal/series/repository"
 	seriesService "backend/internal/series/service"
 	setsService "backend/internal/sets/service"
@@ -53,7 +55,7 @@ func main() {
 
 	// Init repositories
 	// cardsRepo := cardsRepo.NewCardsRepository(db)
-	// raritiesRepo := raritiesRepo.NewRaritiesRepository(db)
+	raritiesRepo := raritiesRepo.NewRaritiesRepository(db)
 	seriesRepo := seriesRepo.NewSeriesRepository(db)
 	setsRepo := setsRepo.NewSetsRepository(db)
 	subtypesRepo := subtypesRepo.NewSubtypesRepository(db)
@@ -62,7 +64,7 @@ func main() {
 
 	// Init services
 	// cardsService := cardsService.NewCardsService(cardsRepo)
-	// raritiesService := raritiesService.NewRaritiesService(raritiesRepo)
+	raritiesService := raritiesService.NewRaritiesService(raritiesRepo)
 	seriesService := seriesService.NewSeriesService(seriesRepo)
 	setsService := setsService.NewSeriesService(setsRepo)
 	subtypesService := subtypesService.NewSubtypesService(subtypesRepo)
@@ -113,7 +115,7 @@ func main() {
 					newSeries := models.SeriesModel{SeriesName: curSet.Series}
 					series, err = seriesService.Create(ctx, &newSeries)
 					if err != nil {
-						log.Fatalf("Error creating series: %v", err)
+						log.Fatalf("Error creating Series: %v", err)
 					}
 					log.Printf("Created new Series: %s", newSeries.SeriesName)
 				} else {
@@ -167,7 +169,7 @@ func main() {
 				}
 				createdType, err := typesService.Create(ctx, &newType)
 				if err != nil {
-					log.Fatalf("Error creating type: %v", err)
+					log.Fatalf("Error creating Type: %v", err)
 				}
 				log.Printf("Created new Type: %s", createdType.TypeName)
 			}
@@ -210,7 +212,7 @@ func main() {
 			}
 			supertypeLookup, err := supertypesService.Search(ctx, &supertypeSearchParams, utilities.NewPaginationQuery(1, 1))
 			if err != nil {
-				log.Fatalf("Error searching supertypes %v", err)
+				log.Fatalf("Error searching supertype %v", err)
 			}
 			if supertypeLookup.TotalRecords == 0 {
 				// If type does not exist, create the type
@@ -219,12 +221,37 @@ func main() {
 				}
 				createdsupertype, err := supertypesService.Create(ctx, &newsupertype)
 				if err != nil {
-					log.Fatalf("Error creating Supertypes: %v", err)
+					log.Fatalf("Error creating Supertype: %v", err)
 				}
-				log.Printf("Created new Supertypes: %s", createdsupertype.SupertypeName)
+				log.Printf("Created new Supertype: %s", createdsupertype.SupertypeName)
 			}
 		}
 		// Sync Rarities
+		rarities, err := tcgClient.GetRarities()
+		if err != nil {
+			log.Fatalf("Error getting rarities from API: %v", err)
+		}
+		for _, curRarity := range rarities {
+			var rarityLookup *models.RaritiesList
+			raritiesearchParams := models.RaritySearchParams{
+				RarityName: curRarity,
+			}
+			rarityLookup, err := raritiesService.Search(ctx, &raritiesearchParams, utilities.NewPaginationQuery(1, 1))
+			if err != nil {
+				log.Fatalf("Error searching rarity: %v", err)
+			}
+			if rarityLookup.TotalRecords == 0 {
+				// If type does not exist, create the type
+				newRarity := models.RarityModel{
+					RarityName: curRarity,
+				}
+				createdRarity, err := raritiesService.Create(ctx, &newRarity)
+				if err != nil {
+					log.Fatalf("Error creating Rarity: %v", err)
+				}
+				log.Printf("Created new Rarity: %s", createdRarity.RarityName)
+			}
+		}
 		// Pricetypes will remain constant
 		log.Printf("Full Sync Complete at: %s", time.Now().String())
 	}
