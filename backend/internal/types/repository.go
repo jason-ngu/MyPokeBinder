@@ -7,7 +7,8 @@ import (
 )
 
 type Repository interface {
-	Create(ctx context.Context, newType *models.TypeEntity) (*models.TypeEntity, error)
+	Create(ctx context.Context, newType *models.TypeModel) (*models.TypeModel, error)
 	GetByID(ctx context.Context, typeID int) (*models.TypeModel, error)
+	SearchTypes(ctx context.Context, searchParams *models.TypeSearchParams, query *utilities.PaginationQuery) (*models.TypesList, error)
 	GetAllTypes(ctx context.Context, query *utilities.PaginationQuery) (*models.TypesList, error)
 }

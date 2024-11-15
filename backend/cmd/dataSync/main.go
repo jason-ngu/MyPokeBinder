@@ -16,8 +16,9 @@ import (
 	// setsService "backend/internal/services/sets"
 	// subtypesService "backend/internal/services/subtypes"
 	// superTypesService "backend/internal/services/supertypes"
-	// typesService "backend/internal/services/types"
 	setsRepo "backend/internal/sets/repository"
+	typesRepo "backend/internal/types/repository"
+	typesService "backend/internal/types/service"
 	"backend/pkg/db"
 	"backend/pkg/utilities"
 	"log"
@@ -53,7 +54,7 @@ func main() {
 	setsRepo := setsRepo.NewSetsRepository(db)
 	// subtypesRepo := subtypesRepo.NewSubtypesRepository(db)
 	// supertypesRepo := supertypesRepo.NewSupertypesRepository(db)
-	// typesRepo := typesRepo.NewTypesRepository(db)
+	typesRepo := typesRepo.NewTypesRepository(db)
 
 	// Init services
 	// cardsService := cardsService.NewCardsService(cardsRepo)
@@ -62,7 +63,7 @@ func main() {
 	setsService := setsService.NewSeriesService(setsRepo)
 	// subtypesService := subtypesService.NewSubtypesService(subtypesRepo)
 	// superTypesService := superTypesService.NewSupertypesService(supertypesRepo)
-	// typesService := typesService.NewTypesService(typesRepo)
+	typesService := typesService.NewTypesService(typesRepo)
 
 	args := os.Args[1:]
 	if len(args) == 1 && args[0] == "full" {
@@ -88,7 +89,7 @@ func main() {
 			setSearchParams := models.SetSearchParams{
 				SetCode: curSet.ID,
 			}
-			setLookup, err := setsService.SearchSets(ctx, &setSearchParams, utilities.NewPaginationQuery(10, 1))
+			setLookup, err := setsService.SearchSets(ctx, &setSearchParams, utilities.NewPaginationQuery(1, 1))
 			if err != nil {
 				log.Fatalf("Error searching sets: %v", err)
 			}
@@ -99,7 +100,7 @@ func main() {
 				seriesSearchParams := models.SeriesSearchParams{
 					SeriesName: curSet.Series,
 				}
-				seriesLookup, err := seriesService.SearchSeries(ctx, &seriesSearchParams, utilities.NewPaginationQuery(10, 1))
+				seriesLookup, err := seriesService.SearchSeries(ctx, &seriesSearchParams, utilities.NewPaginationQuery(1, 1))
 				if err != nil {
 					log.Fatalf("Error searching series: %v", err)
 				}
@@ -139,5 +140,38 @@ func main() {
 			}
 		}
 		log.Printf("Half Sync Complete at: %s", time.Now().String())
+	}
+	if fullSyncFlag {
+		// Sync Types
+		types, err := tcgClient.GetTypes()
+		if err != nil {
+			log.Fatalf("Error getting types from API: %v", err)
+		}
+		for _, curType := range types {
+			var typeLookup *models.TypesList
+			typeSearchParams := models.TypeSearchParams{
+				TypeName: curType,
+			}
+			typeLookup, err := typesService.SearchTypes(ctx, &typeSearchParams, utilities.NewPaginationQuery(1, 1))
+			if err != nil {
+				log.Fatalf("Error searching types %v", err)
+			}
+			if typeLookup.TotalRecords == 0 {
+				// If type does not exist, create the type
+				newType := models.TypeModel{
+					TypeName: curType,
+				}
+				createdType, err := typesService.Create(ctx, &newType)
+				if err != nil {
+					log.Fatalf("Error creating type: %v", err)
+				}
+				log.Printf("Created new Type: %s", createdType.TypeName)
+			}
+		}
+		// Sync Subtypes
+		// Sync Supertypes
+		// Sync Rarities
+		// Pricetypes will remain constant
+		log.Printf("Full Sync Complete at: %s", time.Now().String())
 	}
 }

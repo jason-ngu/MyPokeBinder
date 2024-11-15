@@ -5,6 +5,7 @@ import (
 	"backend/internal/types"
 	"backend/pkg/utilities"
 	"context"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -18,32 +19,37 @@ func NewTypesRepository(db *sqlx.DB) types.Repository {
 	return &typesRepo{db: db}
 }
 
-func (r *typesRepo) Create(ctx context.Context, newType *models.TypeEntity) (*models.TypeEntity, error) {
+func (r *typesRepo) Create(ctx context.Context, newType *models.TypeModel) (*models.TypeModel, error) {
 	t := &models.TypeEntity{}
-	row := r.db.QueryRowContext(ctx, createType, &newType.TypeName)
-	err := row.Scan(t)
+	row := r.db.QueryRowxContext(ctx, createType, &newType.TypeName)
+	err := row.StructScan(t)
 	if err != nil {
-		return nil, errors.Wrap(err, "typesRepo.Create.QueryRowContext.Scan")
+		return nil, errors.Wrap(err, "typesRepo.Create.QueryRowxContext.StructScan")
 	}
 
-	return t, nil
+	return r.GetByID(ctx, t.TypeID)
 }
 
 func (r *typesRepo) GetByID(ctx context.Context, typeID int) (*models.TypeModel, error) {
 	t := &models.TypeModel{}
-	err := r.db.QueryRowContext(ctx, getTypeById, &typeID).Scan(t)
+	row := r.db.QueryRowxContext(ctx, getTypeById, &typeID)
+	err := row.StructScan(t)
 	if err != nil {
-		return nil, errors.Wrap(err, "typesRepo.GetByID.QueryRowContext.Scan")
+		return nil, errors.Wrap(err, "typesRepo.GetByID.QueryRowxContext.StructScan")
 	}
 
 	return t, nil
 }
 
-func (r *typesRepo) GetAllTypes(ctx context.Context, query *utilities.PaginationQuery) (*models.TypesList, error) {
+func (r *typesRepo) SearchTypes(ctx context.Context, searchParams *models.TypeSearchParams, query *utilities.PaginationQuery) (*models.TypesList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountAllTypes).Scan(&totalRecords)
+	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllTypes)
 	if err != nil {
-		return nil, errors.Wrap(err, "typesRepo.GetAllTypes.QueryRowContext")
+		return nil, errors.Wrap(err, "typesRepo.SearchTypes.PrepareNamedContext.getTotalCountAllTypes")
+	}
+	err = nstmt.GetContext(ctx, &totalRecords, &searchParams)
+	if err != nil {
+		return nil, errors.Wrap(err, "typesRepo.SearchTypes.GetContext")
 	}
 	if totalRecords == 0 {
 		return &models.TypesList{
@@ -51,25 +57,49 @@ func (r *typesRepo) GetAllTypes(ctx context.Context, query *utilities.Pagination
 			TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 			CurrentPage:  query.GetPage(),
 			Size:         query.GetSize(),
-			Data:         make([]*models.TypeModel, 0),
+			Data:         make([]models.TypeModel, 0),
 		}, nil
 	}
 
-	var typesList []*models.TypeModel
-	rows, err := r.db.QueryContext(ctx, getAllTypes)
+	var typesList []models.TypeModel
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllTypes, query.GetOffset(), query.GetLimit()))
 	if err != nil {
-		return nil, errors.Wrap(err, "typesRepo.GetAllTypes.QueryContext")
+		return nil, errors.Wrap(err, "typesRepo.SearchTypes.PrepareNamedContext.getAllTypes")
 	}
-	for rows.Next() {
-		var t models.TypeModel
-		err := rows.Scan(&t)
-		if err != nil {
-			return nil, errors.Wrap(err, "typesRepo.GetAllTypes.QueryContext.Scan")
-		}
-		typesList = append(typesList, &t)
+	err = nstmt.SelectContext(ctx, &typesList, &searchParams)
+	if err != nil {
+		return nil, errors.Wrap(err, "typesRepo.SearchTypes.SelectContext")
 	}
-	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "typesRepo.GetAllTypes.rows.Err")
+
+	return &models.TypesList{
+		TotalRecords: totalRecords,
+		TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
+		CurrentPage:  query.GetPage(),
+		Size:         query.GetSize(),
+		Data:         typesList,
+	}, nil
+}
+
+func (r *typesRepo) GetAllTypes(ctx context.Context, query *utilities.PaginationQuery) (*models.TypesList, error) {
+	var totalRecords int
+	err := r.db.GetContext(ctx, &totalRecords, getTotalCountAllTypes)
+	if err != nil {
+		return nil, errors.Wrap(err, "typesRepo.GetAllTypes.GetContext")
+	}
+	if totalRecords == 0 {
+		return &models.TypesList{
+			TotalRecords: totalRecords,
+			TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
+			CurrentPage:  query.GetPage(),
+			Size:         query.GetSize(),
+			Data:         make([]models.TypeModel, 0),
+		}, nil
+	}
+
+	var typesList []models.TypeModel
+	err = r.db.SelectContext(ctx, &typesList, fmt.Sprintf(getAllTypes, query.GetOffset(), query.GetLimit()))
+	if err != nil {
+		return nil, errors.Wrap(err, "typesRepo.GetAllTypes.SelectContext")
 	}
 
 	return &models.TypesList{
