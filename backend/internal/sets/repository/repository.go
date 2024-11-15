@@ -50,7 +50,7 @@ func (r *setsRepo) SearchSets(ctx context.Context, searchParams *models.SetSearc
 	var totalRecords int
 	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllSets)
 	if err != nil {
-		return nil, errors.Wrap(err, "setsRepo.SearchSeries.PrepareNamed.getTotalCountAllSets")
+		return nil, errors.Wrap(err, "setsRepo.SearchSeries.PrepareNamedContext.getTotalCountAllSets")
 	}
 	err = nstmt.GetContext(ctx, &totalRecords, &searchParams)
 	if err != nil {
@@ -69,7 +69,7 @@ func (r *setsRepo) SearchSets(ctx context.Context, searchParams *models.SetSearc
 	var setsList []models.SetModel
 	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllSets, query.GetOffset(), query.GetLimit()))
 	if err != nil {
-		return nil, errors.Wrap(err, "setsRepo.SearchSeries.PrepareNamed.getTotalCountAllSets")
+		return nil, errors.Wrap(err, "setsRepo.SearchSeries.PrepareNamedContext.getTotalCountAllSets")
 	}
 	err = nstmt.SelectContext(ctx, &setsList, &searchParams)
 	if err != nil {

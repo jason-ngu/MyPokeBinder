@@ -27,10 +27,7 @@ func (r *seriesRepo) Create(ctx context.Context, newSeries *models.SeriesModel) 
 		return nil, errors.Wrap(err, "seriesRepo.Create.QueryRowxContext.StructScan")
 	}
 
-	return &models.SeriesModel{
-		SeriesID:   series.SeriesID,
-		SeriesName: newSeries.SeriesName,
-	}, nil
+	return r.GetByID(ctx, series.SeriesID)
 }
 
 func (r *seriesRepo) GetByID(ctx context.Context, seriesID int) (*models.SeriesModel, error) {
@@ -48,7 +45,7 @@ func (r *seriesRepo) SearchSeries(ctx context.Context, searchParams *models.Seri
 	var totalRecords int
 	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllSeries)
 	if err != nil {
-		return nil, errors.Wrap(err, "seriesRepo.SearchSeries.PrepareNamed.getTotalCountAllSeries")
+		return nil, errors.Wrap(err, "seriesRepo.SearchSeries.PrepareNamedContext.getTotalCountAllSeries")
 	}
 	err = nstmt.GetContext(ctx, &totalRecords, &searchParams)
 	if err != nil {
@@ -67,7 +64,7 @@ func (r *seriesRepo) SearchSeries(ctx context.Context, searchParams *models.Seri
 	var seriesList []models.SeriesModel
 	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllSeries, query.GetOffset(), query.GetLimit()))
 	if err != nil {
-		return nil, errors.Wrap(err, "seriesRepo.SearchSeries.PrepareNamed.getAllSeries")
+		return nil, errors.Wrap(err, "seriesRepo.SearchSeries.PrepareNamedContext.getAllSeries")
 	}
 	err = nstmt.SelectContext(ctx, &seriesList, &searchParams)
 	if err != nil {
