@@ -41,15 +41,15 @@ func (r *typesRepo) GetByID(ctx context.Context, typeID int) (*models.TypeModel,
 	return t, nil
 }
 
-func (r *typesRepo) SearchTypes(ctx context.Context, searchParams *models.TypeSearchParams, query *utilities.PaginationQuery) (*models.TypesList, error) {
+func (r *typesRepo) Search(ctx context.Context, searchParams *models.TypeSearchParams, query *utilities.PaginationQuery) (*models.TypesList, error) {
 	var totalRecords int
 	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllTypes)
 	if err != nil {
-		return nil, errors.Wrap(err, "typesRepo.SearchTypes.PrepareNamedContext.getTotalCountAllTypes")
+		return nil, errors.Wrap(err, "typesRepo.Search.PrepareNamedContext.getTotalCountAllTypes")
 	}
 	err = nstmt.GetContext(ctx, &totalRecords, &searchParams)
 	if err != nil {
-		return nil, errors.Wrap(err, "typesRepo.SearchTypes.GetContext")
+		return nil, errors.Wrap(err, "typesRepo.Search.GetContext")
 	}
 	if totalRecords == 0 {
 		return &models.TypesList{
@@ -64,11 +64,11 @@ func (r *typesRepo) SearchTypes(ctx context.Context, searchParams *models.TypeSe
 	var typesList []models.TypeModel
 	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllTypes, query.GetOffset(), query.GetLimit()))
 	if err != nil {
-		return nil, errors.Wrap(err, "typesRepo.SearchTypes.PrepareNamedContext.getAllTypes")
+		return nil, errors.Wrap(err, "typesRepo.Search.PrepareNamedContext.getAllTypes")
 	}
 	err = nstmt.SelectContext(ctx, &typesList, &searchParams)
 	if err != nil {
-		return nil, errors.Wrap(err, "typesRepo.SearchTypes.SelectContext")
+		return nil, errors.Wrap(err, "typesRepo.Search.SelectContext")
 	}
 
 	return &models.TypesList{

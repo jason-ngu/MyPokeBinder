@@ -23,8 +23,8 @@ func (s *subtypesService) GetByID(ctx context.Context, subtypeID int) (*models.S
 	return s.subtypesRepo.GetByID(ctx, subtypeID)
 }
 
-func (s *subtypesService) SearchSubtypes(ctx context.Context, searchParams *models.SubtypeSearchParams, query *utilities.PaginationQuery) (*models.SubtypesList, error) {
-	return s.subtypesRepo.SearchSubtypes(ctx, searchParams, query)
+func (s *subtypesService) Search(ctx context.Context, searchParams *models.SubtypeSearchParams, query *utilities.PaginationQuery) (*models.SubtypesList, error) {
+	return s.subtypesRepo.Search(ctx, searchParams, query)
 }
 
 func (s *subtypesService) GetAllSubtypes(ctx context.Context, query *utilities.PaginationQuery) (*models.SubtypesList, error) {

@@ -40,15 +40,15 @@ func (r *subtypesRepo) GetByID(ctx context.Context, subtypeID int) (*models.Subt
 	return subtype, nil
 }
 
-func (r *subtypesRepo) SearchSubtypes(ctx context.Context, searchParams *models.SubtypeSearchParams, query *utilities.PaginationQuery) (*models.SubtypesList, error) {
+func (r *subtypesRepo) Search(ctx context.Context, searchParams *models.SubtypeSearchParams, query *utilities.PaginationQuery) (*models.SubtypesList, error) {
 	var totalRecords int
 	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllSubtypes)
 	if err != nil {
-		return nil, errors.Wrap(err, "subtypesRepo.SearchSubtypes.PrepareNamedContext.getTotalCountAllSubtypes")
+		return nil, errors.Wrap(err, "subtypesRepo.Search.PrepareNamedContext.getTotalCountAllSubtypes")
 	}
 	err = nstmt.GetContext(ctx, &totalRecords, &searchParams)
 	if err != nil {
-		return nil, errors.Wrap(err, "subtypesRepo.SearchSubtypes.GetContext")
+		return nil, errors.Wrap(err, "subtypesRepo.Search.GetContext")
 	}
 	if totalRecords == 0 {
 		return &models.SubtypesList{
@@ -63,11 +63,11 @@ func (r *subtypesRepo) SearchSubtypes(ctx context.Context, searchParams *models.
 	var subtypesList []models.SubtypeModel
 	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllSubtypes, query.GetOffset(), query.GetLimit()))
 	if err != nil {
-		return nil, errors.Wrap(err, "subtypesRepo.SearchSubtypes.PrepareNamedContext.getAllSubtypes")
+		return nil, errors.Wrap(err, "subtypesRepo.Search.PrepareNamedContext.getAllSubtypes")
 	}
 	err = nstmt.SelectContext(ctx, &subtypesList, &searchParams)
 	if err != nil {
-		return nil, errors.Wrap(err, "subtypesRepo.SearchSubtypes.SelectContext")
+		return nil, errors.Wrap(err, "subtypesRepo.Search.SelectContext")
 	}
 
 	return &models.SubtypesList{

@@ -23,8 +23,8 @@ func (s *setsService) GetByID(ctx context.Context, setsID int) (*models.SetModel
 	return s.setsRepo.GetByID(ctx, setsID)
 }
 
-func (s *setsService) SearchSets(ctx context.Context, searchParams *models.SetSearchParams, query *utilities.PaginationQuery) (*models.SetsList, error) {
-	return s.setsRepo.SearchSets(ctx, searchParams, query)
+func (s *setsService) Search(ctx context.Context, searchParams *models.SetSearchParams, query *utilities.PaginationQuery) (*models.SetsList, error) {
+	return s.setsRepo.Search(ctx, searchParams, query)
 }
 
 func (s *setsService) GetAllSets(ctx context.Context, query *utilities.PaginationQuery) (*models.SetsList, error) {

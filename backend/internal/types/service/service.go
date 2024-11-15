@@ -23,8 +23,8 @@ func (s *typesService) GetByID(ctx context.Context, typeID int) (*models.TypeMod
 	return s.typesRepo.GetByID(ctx, typeID)
 }
 
-func (s *typesService) SearchTypes(ctx context.Context, searchParams *models.TypeSearchParams, query *utilities.PaginationQuery) (*models.TypesList, error) {
-	return s.typesRepo.SearchTypes(ctx, searchParams, query)
+func (s *typesService) Search(ctx context.Context, searchParams *models.TypeSearchParams, query *utilities.PaginationQuery) (*models.TypesList, error) {
+	return s.typesRepo.Search(ctx, searchParams, query)
 }
 
 func (s *typesService) GetAllTypes(ctx context.Context, query *utilities.PaginationQuery) (*models.TypesList, error) {

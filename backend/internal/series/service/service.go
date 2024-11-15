@@ -23,8 +23,8 @@ func (s *seriesService) GetByID(ctx context.Context, seriesID int) (*models.Seri
 	return s.seriesRepo.GetByID(ctx, seriesID)
 }
 
-func (s *seriesService) SearchSeries(ctx context.Context, searchParams *models.SeriesSearchParams, query *utilities.PaginationQuery) (*models.SeriesList, error) {
-	return s.seriesRepo.SearchSeries(ctx, searchParams, query)
+func (s *seriesService) Search(ctx context.Context, searchParams *models.SeriesSearchParams, query *utilities.PaginationQuery) (*models.SeriesList, error) {
+	return s.seriesRepo.Search(ctx, searchParams, query)
 }
 
 func (s *seriesService) GetAllSeries(ctx context.Context, query *utilities.PaginationQuery) (*models.SeriesList, error) {

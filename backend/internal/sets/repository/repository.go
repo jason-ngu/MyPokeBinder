@@ -46,15 +46,15 @@ func (r *setsRepo) GetByID(ctx context.Context, setID int) (*models.SetModel, er
 	return set, nil
 }
 
-func (r *setsRepo) SearchSets(ctx context.Context, searchParams *models.SetSearchParams, query *utilities.PaginationQuery) (*models.SetsList, error) {
+func (r *setsRepo) Search(ctx context.Context, searchParams *models.SetSearchParams, query *utilities.PaginationQuery) (*models.SetsList, error) {
 	var totalRecords int
 	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllSets)
 	if err != nil {
-		return nil, errors.Wrap(err, "setsRepo.SearchSeries.PrepareNamedContext.getTotalCountAllSets")
+		return nil, errors.Wrap(err, "setsRepo.Search.PrepareNamedContext.getTotalCountAllSets")
 	}
 	err = nstmt.GetContext(ctx, &totalRecords, &searchParams)
 	if err != nil {
-		return nil, errors.Wrap(err, "setsRepo.SearchSets.GetContext")
+		return nil, errors.Wrap(err, "setsRepo.Search.GetContext")
 	}
 	if totalRecords == 0 {
 		return &models.SetsList{
@@ -69,11 +69,11 @@ func (r *setsRepo) SearchSets(ctx context.Context, searchParams *models.SetSearc
 	var setsList []models.SetModel
 	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllSets, query.GetOffset(), query.GetLimit()))
 	if err != nil {
-		return nil, errors.Wrap(err, "setsRepo.SearchSeries.PrepareNamedContext.getTotalCountAllSets")
+		return nil, errors.Wrap(err, "setsRepo.Search.PrepareNamedContext.getTotalCountAllSets")
 	}
 	err = nstmt.SelectContext(ctx, &setsList, &searchParams)
 	if err != nil {
-		return nil, errors.Wrap(err, "setsRepo.SearchSets.SelectContext")
+		return nil, errors.Wrap(err, "setsRepo.Search.SelectContext")
 	}
 
 	return &models.SetsList{

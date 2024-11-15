@@ -91,7 +91,7 @@ func main() {
 			setSearchParams := models.SetSearchParams{
 				SetCode: curSet.ID,
 			}
-			setLookup, err := setsService.SearchSets(ctx, &setSearchParams, utilities.NewPaginationQuery(1, 1))
+			setLookup, err := setsService.Search(ctx, &setSearchParams, utilities.NewPaginationQuery(1, 1))
 			if err != nil {
 				log.Fatalf("Error searching sets: %v", err)
 			}
@@ -102,7 +102,7 @@ func main() {
 				seriesSearchParams := models.SeriesSearchParams{
 					SeriesName: curSet.Series,
 				}
-				seriesLookup, err := seriesService.SearchSeries(ctx, &seriesSearchParams, utilities.NewPaginationQuery(1, 1))
+				seriesLookup, err := seriesService.Search(ctx, &seriesSearchParams, utilities.NewPaginationQuery(1, 1))
 				if err != nil {
 					log.Fatalf("Error searching series: %v", err)
 				}
@@ -154,7 +154,7 @@ func main() {
 			typeSearchParams := models.TypeSearchParams{
 				TypeName: curType,
 			}
-			typeLookup, err := typesService.SearchTypes(ctx, &typeSearchParams, utilities.NewPaginationQuery(1, 1))
+			typeLookup, err := typesService.Search(ctx, &typeSearchParams, utilities.NewPaginationQuery(1, 1))
 			if err != nil {
 				log.Fatalf("Error searching types %v", err)
 			}
@@ -180,7 +180,7 @@ func main() {
 			subtypeSearchParams := models.SubtypeSearchParams{
 				SubtypeName: curSubtype,
 			}
-			subtypeLookup, err := subtypesService.SearchSubtypes(ctx, &subtypeSearchParams, utilities.NewPaginationQuery(1, 1))
+			subtypeLookup, err := subtypesService.Search(ctx, &subtypeSearchParams, utilities.NewPaginationQuery(1, 1))
 			if err != nil {
 				log.Fatalf("Error searching subtypes %v", err)
 			}
