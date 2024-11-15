@@ -31,10 +31,10 @@ type SetModel struct {
 }
 
 type SetSearchParams struct {
-	SetName    string
-	SetCode    string
-	SeriesName string
-	PtcgoCode  string
+	SetName    string `json:"set_name" db:"set_name"`
+	SetCode    string `json:"set_code" db:"set_code"`
+	SeriesName string `json:"series_name" db:"series_name"`
+	PtcgoCode  string `json:"ptcgo_code" db:"ptcgo_code"`
 }
 
 type SetsList struct {

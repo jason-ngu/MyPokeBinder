@@ -6,7 +6,6 @@ import (
 	"backend/pkg/utilities"
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -46,20 +45,12 @@ func (r *seriesRepo) GetByID(ctx context.Context, seriesID int) (*models.SeriesM
 }
 
 func (r *seriesRepo) SearchSeries(ctx context.Context, searchParams *models.SeriesSearchParams, query *utilities.PaginationQuery) (*models.SeriesList, error) {
-	var whereFilters []string
-	var whereFiltersStr string
-	if searchParams != nil {
-		if searchParams.SeriesName != "" {
-			formattedSeriesName := utilities.FormatStringForDatabase(searchParams.SeriesName)
-			whereFilters = append(whereFilters, fmt.Sprintf("series_name = '%s'", formattedSeriesName))
-		}
-		whereFiltersStr = " WHERE " + strings.Join(whereFilters, " AND ")
-	}
-	getAllSeriesCountParams := fmt.Sprintf(getTotalCountAllSeries, whereFiltersStr)
-	getAllSeriesParams := fmt.Sprintf(getAllSeries, whereFiltersStr, query.GetOffset(), query.GetLimit())
-
 	var totalRecords int
-	err := r.db.GetContext(ctx, &totalRecords, getAllSeriesCountParams)
+	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllSeries)
+	if err != nil {
+		return nil, errors.Wrap(err, "seriesRepo.SearchSeries.PrepareNamed.getTotalCountAllSeries")
+	}
+	err = nstmt.GetContext(ctx, &totalRecords, &searchParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "seriesRepo.SearchSeries.GetContext")
 	}
@@ -74,7 +65,11 @@ func (r *seriesRepo) SearchSeries(ctx context.Context, searchParams *models.Seri
 	}
 
 	var seriesList []models.SeriesModel
-	err = r.db.SelectContext(ctx, &seriesList, getAllSeriesParams)
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllSeries, query.GetOffset(), query.GetLimit()))
+	if err != nil {
+		return nil, errors.Wrap(err, "seriesRepo.SearchSeries.PrepareNamed.getAllSeries")
+	}
+	err = nstmt.SelectContext(ctx, &seriesList, &searchParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "seriesRepo.SearchSeries.SelectContext")
 	}
@@ -105,22 +100,10 @@ func (r *seriesRepo) GetAllSeries(ctx context.Context, query *utilities.Paginati
 	}
 
 	var seriesList []models.SeriesModel
-	err = r.db.SelectContext(ctx, &seriesList, getAllSeries, query.GetOffset(), query.GetLimit())
-	// rows, err := r.db.QueryContext(ctx, getAllSeries)
+	err = r.db.SelectContext(ctx, &seriesList, fmt.Sprintf(getAllSeries, query.GetOffset(), query.GetLimit()))
 	if err != nil {
 		return nil, errors.Wrap(err, "seriesRepo.GetAllSeries.SelectContext")
 	}
-	// for rows.Next() {
-	// 	var series models.SeriesModel
-	// 	err := rows.Scan(&series.SeriesID, &series.SeriesName)
-	// 	if err != nil {
-	// 		return nil, errors.Wrap(err, "seriesRepo.GetAllSeries.QueryContext.Scan")
-	// 	}
-	// 	seriesList = append(seriesList, &series)
-	// }
-	// if err = rows.Err(); err != nil {
-	// 	return nil, errors.Wrap(err, "seriesRepo.GetAllSeries.rows.Err")
-	// }
 
 	return &models.SeriesList{
 		TotalRecords: totalRecords,

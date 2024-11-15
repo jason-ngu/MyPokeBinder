@@ -33,7 +33,18 @@ const (
 							sr.series_name AS "series.series_name"
 							FROM public.sets s
 							JOIN public.series sr
-							ON s.series_id = sr.series_id%s OFFSET %d LIMIT %d`
-	getTotalCountAllSets = `SELECT COUNT(*) FROM public.sets%s`
-	deleteSet            = `DELETE FROM public.sets WHERE set_id = $1`
+							ON s.series_id = sr.series_id
+							WHERE 	s.set_name = :set_name AND
+									s.set_code = :set_code AND
+									sr.series_name = :series_name AND
+									s.ptcgo_code = :ptcgo_code
+							OFFSET %d LIMIT %d`
+	getTotalCountAllSets = `SELECT COUNT(*) FROM public.sets s
+							JOIN public.series sr
+							ON s.series_id = sr.series_id
+							WHERE 	s.set_name = :set_name AND
+									s.set_code = :set_code AND
+									sr.series_name = :series_name AND
+									s.ptcgo_code = :ptcgo_code`
+	deleteSet = `DELETE FROM public.sets WHERE set_id = $1`
 )

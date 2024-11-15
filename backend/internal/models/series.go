@@ -11,7 +11,7 @@ type SeriesModel struct {
 }
 
 type SeriesSearchParams struct {
-	SeriesName string
+	SeriesName string `json:"series_name" db:"series_name"`
 }
 
 type SeriesList struct {

@@ -7,7 +7,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -48,29 +47,12 @@ func (r *setsRepo) GetByID(ctx context.Context, setID int) (*models.SetModel, er
 }
 
 func (r *setsRepo) SearchSets(ctx context.Context, searchParams *models.SetSearchParams, query *utilities.PaginationQuery) (*models.SetsList, error) {
-	var whereFilters []string
-	var whereFiltersStr string
-	if searchParams != nil {
-		if searchParams.SetName != "" {
-			formattedSetName := utilities.FormatStringForDatabase(searchParams.SetName)
-			whereFilters = append(whereFilters, fmt.Sprintf("set_name = '%s'", formattedSetName))
-		}
-		if searchParams.SetCode != "" {
-			whereFilters = append(whereFilters, fmt.Sprintf("set_code = '%s'", searchParams.SetCode))
-		}
-		if searchParams.SeriesName != "" {
-			whereFilters = append(whereFilters, fmt.Sprintf("series_name = '%s'", searchParams.SeriesName))
-		}
-		if searchParams.PtcgoCode != "" {
-			whereFilters = append(whereFilters, fmt.Sprintf("ptcgo_code = '%s'", searchParams.PtcgoCode))
-		}
-		whereFiltersStr = " WHERE " + strings.Join(whereFilters, " AND ")
-	}
-	getTotalCountAllSetsParams := fmt.Sprintf(getTotalCountAllSets, whereFiltersStr)
-	getAllSetsParams := fmt.Sprintf(getAllSets, whereFiltersStr, query.GetOffset(), query.GetLimit())
-
 	var totalRecords int
-	err := r.db.GetContext(ctx, &totalRecords, getTotalCountAllSetsParams)
+	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllSets)
+	if err != nil {
+		return nil, errors.Wrap(err, "setsRepo.SearchSeries.PrepareNamed.getTotalCountAllSets")
+	}
+	err = nstmt.GetContext(ctx, &totalRecords, &searchParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "setsRepo.SearchSets.GetContext")
 	}
@@ -85,7 +67,11 @@ func (r *setsRepo) SearchSets(ctx context.Context, searchParams *models.SetSearc
 	}
 
 	var setsList []models.SetModel
-	err = r.db.SelectContext(ctx, &setsList, getAllSetsParams)
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllSets, query.GetOffset(), query.GetLimit()))
+	if err != nil {
+		return nil, errors.Wrap(err, "setsRepo.SearchSeries.PrepareNamed.getTotalCountAllSets")
+	}
+	err = nstmt.SelectContext(ctx, &setsList, &searchParams)
 	if err != nil {
 		return nil, errors.Wrap(err, "setsRepo.SearchSets.SelectContext")
 	}
@@ -116,7 +102,7 @@ func (r *setsRepo) GetAllSets(ctx context.Context, query *utilities.PaginationQu
 	}
 
 	var setsList []models.SetModel
-	err = r.db.SelectContext(ctx, &setsList, getAllSets, query.GetOffset(), query.GetLimit())
+	err = r.db.SelectContext(ctx, &setsList, fmt.Sprintf(getAllSets, query.GetOffset(), query.GetLimit()))
 	if err != nil {
 		return nil, errors.Wrap(err, "setsRepo.GetAllSets.SelectContext")
 	}
