@@ -7,7 +7,8 @@ import (
 )
 
 type Service interface {
-	Create(ctx context.Context, newPricetype *models.PricetypeEntity) (*models.PricetypeEntity, error)
+	Create(ctx context.Context, newPricetype *models.PricetypeModel) (*models.PricetypeModel, error)
 	GetByID(ctx context.Context, rarityID int) (*models.PricetypeModel, error)
+	Search(ctx context.Context, searchParams *models.PricetypeSearchParams, query *utilities.PaginationQuery) (*models.PricetypesList, error)
 	GetAllPricetypes(ctx context.Context, query *utilities.PaginationQuery) (*models.PricetypesList, error)
 }

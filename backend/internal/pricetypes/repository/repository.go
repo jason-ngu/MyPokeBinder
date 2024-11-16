@@ -5,6 +5,7 @@ import (
 	"backend/internal/pricetypes"
 	"backend/pkg/utilities"
 	"context"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -18,32 +19,36 @@ func NewPricetypesRepository(db *sqlx.DB) pricetypes.Repository {
 	return &pricetypesRepo{db: db}
 }
 
-func (r *pricetypesRepo) Create(ctx context.Context, newPricetype *models.PricetypeEntity) (*models.PricetypeEntity, error) {
+func (r *pricetypesRepo) Create(ctx context.Context, newPricetype *models.PricetypeModel) (*models.PricetypeModel, error) {
 	pricetype := &models.PricetypeEntity{}
-	row := r.db.QueryRowContext(ctx, createPricetype, &newPricetype.PricetypeName)
-	err := row.Scan(pricetype)
+	row := r.db.QueryRowxContext(ctx, createPricetype, &newPricetype.PricetypeName)
+	err := row.StructScan(pricetype)
 	if err != nil {
-		return nil, errors.Wrap(err, "pricetypesRepo.Create.QueryRowContext.Scan")
+		return nil, errors.Wrap(err, "pricetypesRepo.Create.QueryRowxContext.StructScan")
 	}
 
-	return pricetype, nil
+	return r.GetByID(ctx, pricetype.PricetypeID)
 }
 
 func (r *pricetypesRepo) GetByID(ctx context.Context, pricetypeID int) (*models.PricetypeModel, error) {
 	pricetype := &models.PricetypeModel{}
-	err := r.db.QueryRowContext(ctx, getPricetypeById, &pricetypeID).Scan(pricetype)
+	err := r.db.GetContext(ctx, pricetype, getPricetypeById, pricetypeID)
 	if err != nil {
-		return nil, errors.Wrap(err, "pricetypesRepo.GetByID.QueryRowContext.Scan")
+		return nil, errors.Wrap(err, "pricetypesRepo.GetByID.GetContext")
 	}
 
 	return pricetype, nil
 }
 
-func (r *pricetypesRepo) GetAllPricetypes(ctx context.Context, query *utilities.PaginationQuery) (*models.PricetypesList, error) {
+func (r *pricetypesRepo) Search(ctx context.Context, searchParams *models.PricetypeSearchParams, query *utilities.PaginationQuery) (*models.PricetypesList, error) {
 	var totalRecords int
-	err := r.db.QueryRowContext(ctx, getTotalCountAllPricetypes).Scan(&totalRecords)
+	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllPricetypes)
 	if err != nil {
-		return nil, errors.Wrap(err, "pricetypesRepo.GetAllPricetypes.QueryRowContext")
+		return nil, errors.Wrap(err, "pricetypesRepo.Search.PrepareNamedContext")
+	}
+	err = nstmt.GetContext(ctx, &totalRecords, &searchParams)
+	if err != nil {
+		return nil, errors.Wrap(err, "pricetypesRepo.Search.GetContext")
 	}
 	if totalRecords == 0 {
 		return &models.PricetypesList{
@@ -51,25 +56,49 @@ func (r *pricetypesRepo) GetAllPricetypes(ctx context.Context, query *utilities.
 			TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
 			CurrentPage:  query.GetPage(),
 			Size:         query.GetSize(),
-			Data:         make([]*models.PricetypeModel, 0),
+			Data:         make([]models.PricetypeModel, 0),
 		}, nil
 	}
 
-	var pricetypesList []*models.PricetypeModel
-	rows, err := r.db.QueryContext(ctx, getAllPricetypes)
+	var pricetypesList []models.PricetypeModel
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllPricetypes, query.GetOffset(), query.GetLimit()))
 	if err != nil {
-		return nil, errors.Wrap(err, "pricetypesRepo.GetAllPricetypes.QueryContext")
+		return nil, errors.Wrap(err, "pricetypesRepo.Search.PrepareNamedContext.getAllPricetypes")
 	}
-	for rows.Next() {
-		var pricetype models.PricetypeModel
-		err := rows.Scan(&pricetype)
-		if err != nil {
-			return nil, errors.Wrap(err, "pricetypesRepo.GetAllPricetypes.QueryContext.Scan")
-		}
-		pricetypesList = append(pricetypesList, &pricetype)
+	err = nstmt.SelectContext(ctx, &pricetypesList, &searchParams)
+	if err != nil {
+		return nil, errors.Wrap(err, "pricetypesRepo.Search.SelectContext")
 	}
-	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "pricetypesRepo.GetAllPricetypes.rows.Err")
+
+	return &models.PricetypesList{
+		TotalRecords: totalRecords,
+		TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
+		CurrentPage:  query.GetPage(),
+		Size:         query.GetSize(),
+		Data:         pricetypesList,
+	}, nil
+}
+
+func (r *pricetypesRepo) GetAllPricetypes(ctx context.Context, query *utilities.PaginationQuery) (*models.PricetypesList, error) {
+	var totalRecords int
+	err := r.db.GetContext(ctx, &totalRecords, getTotalCountAllPricetypes)
+	if err != nil {
+		return nil, errors.Wrap(err, "pricetypesRepo.GetAllPricetypes.GetContext")
+	}
+	if totalRecords == 0 {
+		return &models.PricetypesList{
+			TotalRecords: totalRecords,
+			TotalPages:   utilities.GetTotalPages(totalRecords, query.GetSize()),
+			CurrentPage:  query.GetPage(),
+			Size:         query.GetSize(),
+			Data:         make([]models.PricetypeModel, 0),
+		}, nil
+	}
+
+	var pricetypesList []models.PricetypeModel
+	err = r.db.SelectContext(ctx, &pricetypesList, fmt.Sprintf(getAllPricetypes, query.GetOffset(), query.GetLimit()))
+	if err != nil {
+		return nil, errors.Wrap(err, "pricetypesRepo.GetAllPricetypes.SelectContext")
 	}
 
 	return &models.PricetypesList{
