@@ -30,6 +30,10 @@ CREATE TABLE pricetypes(
     pricetype_name     VARCHAR(20) UNIQUE NOT NULL
 );
 
+INSERT INTO pricetypes
+    (pricetype_name)
+    VALUES ('Normal'), ('Holofoil'), ('ReverseHolofoil');
+
 -- Enum for users
 CREATE TYPE provider_type AS ENUM('Google');
 
