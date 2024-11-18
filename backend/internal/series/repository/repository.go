@@ -42,7 +42,7 @@ func (r *seriesRepo) GetByID(ctx context.Context, seriesID int) (*models.SeriesM
 
 func (r *seriesRepo) Search(ctx context.Context, searchParams *models.SeriesSearchParams, query *utilities.PaginationQuery) (*models.SeriesList, error) {
 	var totalRecords int
-	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllSeries)
+	nstmt, err := r.db.PrepareNamedContext(ctx, utilities.FormatSqlQueryWithSearchParams(getTotalCountAllSeries, *searchParams, false))
 	if err != nil {
 		return nil, errors.Wrap(err, "seriesRepo.Search.PrepareNamedContext.getTotalCountAllSeries")
 	}
@@ -61,7 +61,7 @@ func (r *seriesRepo) Search(ctx context.Context, searchParams *models.SeriesSear
 	}
 
 	var seriesList []models.SeriesModel
-	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllSeries, query.GetOffset(), query.GetLimit()))
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(utilities.FormatSqlQueryWithSearchParams(getAllSeries, *searchParams, true), query.GetOffset(), query.GetLimit()))
 	if err != nil {
 		return nil, errors.Wrap(err, "seriesRepo.Search.PrepareNamedContext.getAllSeries")
 	}

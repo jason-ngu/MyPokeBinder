@@ -42,7 +42,7 @@ func (r *subtypesRepo) GetByID(ctx context.Context, subtypeID int) (*models.Subt
 
 func (r *subtypesRepo) Search(ctx context.Context, searchParams *models.SubtypeSearchParams, query *utilities.PaginationQuery) (*models.SubtypesList, error) {
 	var totalRecords int
-	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllSubtypes)
+	nstmt, err := r.db.PrepareNamedContext(ctx, utilities.FormatSqlQueryWithSearchParams(getTotalCountAllSubtypes, *searchParams, false))
 	if err != nil {
 		return nil, errors.Wrap(err, "subtypesRepo.Search.PrepareNamedContext.getTotalCountAllSubtypes")
 	}
@@ -61,7 +61,7 @@ func (r *subtypesRepo) Search(ctx context.Context, searchParams *models.SubtypeS
 	}
 
 	var subtypesList []models.SubtypeModel
-	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllSubtypes, query.GetOffset(), query.GetLimit()))
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(utilities.FormatSqlQueryWithSearchParams(getAllSubtypes, *searchParams, true), query.GetOffset(), query.GetLimit()))
 	if err != nil {
 		return nil, errors.Wrap(err, "subtypesRepo.Search.PrepareNamedContext.getAllSubtypes")
 	}

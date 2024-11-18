@@ -42,7 +42,7 @@ func (r *supertypesRepo) GetByID(ctx context.Context, supertypeID int) (*models.
 
 func (r *supertypesRepo) Search(ctx context.Context, searchParams *models.SupertypeSearchParams, query *utilities.PaginationQuery) (*models.SupertypesList, error) {
 	var totalRecords int
-	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllSupertypes)
+	nstmt, err := r.db.PrepareNamedContext(ctx, utilities.FormatSqlQueryWithSearchParams(getTotalCountAllSupertypes, *searchParams, false))
 	if err != nil {
 		return nil, errors.Wrap(err, "supertypesRepo.Search.PrepareNamedContext.getTotalCountAllSupertypes")
 	}
@@ -61,7 +61,7 @@ func (r *supertypesRepo) Search(ctx context.Context, searchParams *models.Supert
 	}
 
 	var supertypesList []models.SupertypeModel
-	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllSupertypes, query.GetOffset(), query.GetLimit()))
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(utilities.FormatSqlQueryWithSearchParams(getAllSupertypes, *searchParams, true), query.GetOffset(), query.GetLimit()))
 	if err != nil {
 		return nil, errors.Wrap(err, "supertypesRepo.Search.PrepareNamedContext.getAllSupertypes")
 	}

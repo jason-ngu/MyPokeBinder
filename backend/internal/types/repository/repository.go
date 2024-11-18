@@ -42,7 +42,7 @@ func (r *typesRepo) GetByID(ctx context.Context, typeID int) (*models.TypeModel,
 
 func (r *typesRepo) Search(ctx context.Context, searchParams *models.TypeSearchParams, query *utilities.PaginationQuery) (*models.TypesList, error) {
 	var totalRecords int
-	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllTypes)
+	nstmt, err := r.db.PrepareNamedContext(ctx, utilities.FormatSqlQueryWithSearchParams(getTotalCountAllTypes, *searchParams, false))
 	if err != nil {
 		return nil, errors.Wrap(err, "typesRepo.Search.PrepareNamedContext.getTotalCountAllTypes")
 	}
@@ -61,7 +61,7 @@ func (r *typesRepo) Search(ctx context.Context, searchParams *models.TypeSearchP
 	}
 
 	var typesList []models.TypeModel
-	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllTypes, query.GetOffset(), query.GetLimit()))
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(utilities.FormatSqlQueryWithSearchParams(getAllTypes, *searchParams, true), query.GetOffset(), query.GetLimit()))
 	if err != nil {
 		return nil, errors.Wrap(err, "typesRepo.Search.PrepareNamedContext.getAllTypes")
 	}

@@ -42,7 +42,7 @@ func (r *pricetypesRepo) GetByID(ctx context.Context, pricetypeID int) (*models.
 
 func (r *pricetypesRepo) Search(ctx context.Context, searchParams *models.PricetypeSearchParams, query *utilities.PaginationQuery) (*models.PricetypesList, error) {
 	var totalRecords int
-	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllPricetypes)
+	nstmt, err := r.db.PrepareNamedContext(ctx, utilities.FormatSqlQueryWithSearchParams(getTotalCountAllPricetypes, *searchParams, false))
 	if err != nil {
 		return nil, errors.Wrap(err, "pricetypesRepo.Search.PrepareNamedContext")
 	}
@@ -61,7 +61,7 @@ func (r *pricetypesRepo) Search(ctx context.Context, searchParams *models.Pricet
 	}
 
 	var pricetypesList []models.PricetypeModel
-	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllPricetypes, query.GetOffset(), query.GetLimit()))
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(utilities.FormatSqlQueryWithSearchParams(getAllPricetypes, *searchParams, true), query.GetOffset(), query.GetLimit()))
 	if err != nil {
 		return nil, errors.Wrap(err, "pricetypesRepo.Search.PrepareNamedContext.getAllPricetypes")
 	}

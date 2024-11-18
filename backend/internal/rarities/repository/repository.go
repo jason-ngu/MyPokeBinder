@@ -42,7 +42,7 @@ func (r *raritiesRepo) GetByID(ctx context.Context, rarityID int) (*models.Rarit
 
 func (r *raritiesRepo) Search(ctx context.Context, searchParams *models.RaritySearchParams, query *utilities.PaginationQuery) (*models.RaritiesList, error) {
 	var totalRecords int
-	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllRarities)
+	nstmt, err := r.db.PrepareNamedContext(ctx, utilities.FormatSqlQueryWithSearchParams(getTotalCountAllRarities, *searchParams, false))
 	if err != nil {
 		return nil, errors.Wrap(err, "raritiesRepo.Search.PrepareNamedContext.getTotalCountAllRarities")
 	}
@@ -61,7 +61,7 @@ func (r *raritiesRepo) Search(ctx context.Context, searchParams *models.RaritySe
 	}
 
 	var raritiesList []models.RarityModel
-	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllRarities, query.GetOffset(), query.GetLimit()))
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(utilities.FormatSqlQueryWithSearchParams(getAllRarities, *searchParams, true), query.GetOffset(), query.GetLimit()))
 	if err != nil {
 		return nil, errors.Wrap(err, "raritiesRepo.Search.PrepareNamedContext.getAllRarities")
 	}

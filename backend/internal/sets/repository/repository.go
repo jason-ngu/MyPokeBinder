@@ -47,7 +47,7 @@ func (r *setsRepo) GetByID(ctx context.Context, setID int) (*models.SetModel, er
 
 func (r *setsRepo) Search(ctx context.Context, searchParams *models.SetSearchParams, query *utilities.PaginationQuery) (*models.SetsList, error) {
 	var totalRecords int
-	nstmt, err := r.db.PrepareNamedContext(ctx, getTotalCountAllSets)
+	nstmt, err := r.db.PrepareNamedContext(ctx, utilities.FormatSqlQueryWithSearchParams(getTotalCountAllSets, *searchParams, false))
 	if err != nil {
 		return nil, errors.Wrap(err, "setsRepo.Search.PrepareNamedContext.getTotalCountAllSets")
 	}
@@ -66,7 +66,7 @@ func (r *setsRepo) Search(ctx context.Context, searchParams *models.SetSearchPar
 	}
 
 	var setsList []models.SetModel
-	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(getAllSets, query.GetOffset(), query.GetLimit()))
+	nstmt, err = r.db.PrepareNamedContext(ctx, fmt.Sprintf(utilities.FormatSqlQueryWithSearchParams(getAllSets, *searchParams, true), query.GetOffset(), query.GetLimit()))
 	if err != nil {
 		return nil, errors.Wrap(err, "setsRepo.Search.PrepareNamedContext.getTotalCountAllSets")
 	}
