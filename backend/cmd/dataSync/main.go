@@ -2,35 +2,33 @@ package main
 
 import (
 	"backend/config"
+	cardsRepo "backend/internal/cards/repository"
+	cardsService "backend/internal/cards/service"
 	"backend/internal/models"
+	pricetypesRepo "backend/internal/pricetypes/repository"
+	pricetypesService "backend/internal/pricetypes/service"
 	raritiesRepo "backend/internal/rarities/repository"
 	raritiesService "backend/internal/rarities/service"
 	seriesRepo "backend/internal/series/repository"
 	seriesService "backend/internal/series/service"
+	setsRepo "backend/internal/sets/repository"
 	setsService "backend/internal/sets/service"
 	subtypesRepo "backend/internal/subtypes/repository"
 	subtypesService "backend/internal/subtypes/service"
 	supertypesRepo "backend/internal/supertypes/repository"
 	supertypesService "backend/internal/supertypes/service"
-	"context"
-	"strings"
-	"time"
-
-	// cardsService "backend/internal/services/cards"
-	// raritiesService "backend/internal/services/rarities"
-	// seriesService "backend/internal/services/series"
-	// setsService "backend/internal/services/sets"
-	// subtypesService "backend/internal/services/subtypes"
-	// superTypesService "backend/internal/services/supertypes"
-	setsRepo "backend/internal/sets/repository"
 	typesRepo "backend/internal/types/repository"
 	typesService "backend/internal/types/service"
 	"backend/pkg/db"
 	"backend/pkg/utilities"
+	"context"
 	"log"
 	"os"
+	"strings"
+	"time"
 
 	tcg "github.com/PokemonTCG/pokemon-tcg-sdk-go-v2/pkg"
+	"github.com/PokemonTCG/pokemon-tcg-sdk-go-v2/pkg/request"
 
 	_ "github.com/lib/pq"
 )
@@ -54,22 +52,24 @@ func main() {
 	}
 
 	// Init repositories
-	// cardsRepo := cardsRepo.NewCardsRepository(db)
+	cardsRepo := cardsRepo.NewCardsRepository(db)
 	raritiesRepo := raritiesRepo.NewRaritiesRepository(db)
 	seriesRepo := seriesRepo.NewSeriesRepository(db)
 	setsRepo := setsRepo.NewSetsRepository(db)
 	subtypesRepo := subtypesRepo.NewSubtypesRepository(db)
 	supertypesRepo := supertypesRepo.NewSupertypesRepository(db)
 	typesRepo := typesRepo.NewTypesRepository(db)
+	pricetypesRepo := pricetypesRepo.NewPricetypesRepository(db)
 
 	// Init services
-	// cardsService := cardsService.NewCardsService(cardsRepo)
+	cardsService := cardsService.NewCardsService(cardsRepo)
 	raritiesService := raritiesService.NewRaritiesService(raritiesRepo)
 	seriesService := seriesService.NewSeriesService(seriesRepo)
 	setsService := setsService.NewSeriesService(setsRepo)
 	subtypesService := subtypesService.NewSubtypesService(subtypesRepo)
 	supertypesService := supertypesService.NewSupertypesService(supertypesRepo)
 	typesService := typesService.NewTypesService(typesRepo)
+	pricetypesService := pricetypesService.NewPricetypesService(pricetypesRepo)
 
 	args := os.Args[1:]
 	if len(args) == 1 && args[0] == "full" {
@@ -233,10 +233,10 @@ func main() {
 		}
 		for _, curRarity := range rarities {
 			var rarityLookup *models.RaritiesList
-			raritiesearchParams := models.RaritySearchParams{
+			raritiesSearchParams := models.RaritySearchParams{
 				RarityName: curRarity,
 			}
-			rarityLookup, err := raritiesService.Search(ctx, &raritiesearchParams, utilities.NewPaginationQuery(1, 1))
+			rarityLookup, err := raritiesService.Search(ctx, &raritiesSearchParams, utilities.NewPaginationQuery(1, 1))
 			if err != nil {
 				log.Fatalf("Error searching rarity: %v", err)
 			}
@@ -255,4 +255,258 @@ func main() {
 		// Pricetypes will remain constant
 		log.Printf("Full Sync Complete at: %s", time.Now().String())
 	}
+	page := 0
+	cards, err := tcgClient.GetCards()
+	if err != nil {
+		log.Fatalf("Error getting cards from API on page: %d", page)
+	}
+	for len(cards) > 0 {
+		for _, curCard := range cards {
+			var normalPrice, holoFoilPrice, reverseHolofoilPrice float32
+			var curPricetype string
+			if curCard.TCGPlayer.Prices.Normal != nil {
+				normalPrice = float32(curCard.TCGPlayer.Prices.Normal.Market)
+			}
+			if curCard.TCGPlayer.Prices.Holofoil != nil {
+				holoFoilPrice = float32(curCard.TCGPlayer.Prices.Holofoil.Market)
+			}
+			if curCard.TCGPlayer.Prices.ReverseHolofoil != nil {
+				reverseHolofoilPrice = float32(curCard.TCGPlayer.Prices.ReverseHolofoil.Market)
+			}
+
+			// Get set model from db
+			var setLookup *models.SetsList
+			var set *models.SetModel
+			setSearchParams := models.SetSearchParams{
+				SetName: curCard.Set.Name,
+			}
+			setLookup, err = setsService.Search(ctx, &setSearchParams, utilities.NewPaginationQuery(1, 1))
+			if err != nil {
+				log.Fatalf("Error searching sets: %v", err)
+			}
+			if setLookup.TotalRecords == 0 {
+				log.Printf("Card set %s does not exist - rerun half sync", curCard.Set.Name)
+				continue
+			} else {
+				set = &setLookup.Data[0]
+			}
+			// Get supertype model from db
+			var supertypeLookup *models.SupertypesList
+			var supertype *models.SupertypeModel
+			supertypeSearchParams := models.SupertypeSearchParams{
+				SupertypeName: curCard.Supertype,
+			}
+			supertypeLookup, err = supertypesService.Search(ctx, &supertypeSearchParams, utilities.NewPaginationQuery(1, 1))
+			if err != nil {
+				log.Fatalf("Error searching supertypes: %v", err)
+			}
+			if supertypeLookup.TotalRecords == 0 {
+				log.Printf("Card supertype %s does not exist - rerun full sync", curCard.Supertype)
+				continue
+			} else {
+				supertype = &supertypeLookup.Data[0]
+			}
+			// Get rarity model from db
+			var rarityLookup *models.RaritiesList
+			var rarity *models.RarityModel
+			raritySearchParams := models.RaritySearchParams{
+				RarityName: curCard.Rarity,
+			}
+			rarityLookup, err = raritiesService.Search(ctx, &raritySearchParams, utilities.NewPaginationQuery(1, 1))
+			if err != nil {
+				log.Fatalf("Error searching rarities: %v", err)
+			}
+			if rarityLookup.TotalRecords == 0 {
+				log.Printf("Card rarity %s does not exist - rerun full sync", curCard.Rarity)
+				continue
+			} else {
+				rarity = &rarityLookup.Data[0]
+			}
+			// Get type models from db
+			var typesList []models.TypeModel
+			var typeLookup *models.TypesList
+			for _, curType := range curCard.Types {
+				typeSearchParams := models.TypeSearchParams{
+					TypeName: curType,
+				}
+				typeLookup, err = typesService.Search(ctx, &typeSearchParams, utilities.NewPaginationQuery(1, 1))
+				if err != nil {
+					log.Fatalf("Error searching types: %v", err)
+				}
+				typesList = append(typesList, typeLookup.Data...)
+			}
+			// Get subtype models from db
+			var subtypesList []models.SubtypeModel
+			var subtypeLookup *models.SubtypesList
+			for _, curSubtype := range curCard.Subtypes {
+				subtypeSearchParams := models.SubtypeSearchParams{
+					SubtypeName: curSubtype,
+				}
+				subtypeLookup, err = subtypesService.Search(ctx, &subtypeSearchParams, utilities.NewPaginationQuery(1, 1))
+				if err != nil {
+					log.Fatalf("Error searching subtypes: %v", err)
+				}
+				subtypesList = append(subtypesList, subtypeLookup.Data...)
+			}
+
+			// Normal Card
+			if normalPrice != 0.0 {
+				curPricetype = "Normal"
+				var cardLookup *models.CardsList
+				cardSearchParams := models.CardSearchParams{
+					CardCode:      curCard.ID,
+					PricetypeName: curPricetype,
+				}
+				cardLookup, err := cardsService.Search(ctx, &cardSearchParams, utilities.NewPaginationQuery(1, 1))
+				if err != nil {
+					log.Fatalf("Error searching card: %v", err)
+				}
+				if cardLookup.TotalRecords == 0 {
+					// If card does not exist, create the card
+					// Get pricetype model from db
+					var pricetypeLookup *models.PricetypesList
+					var pricetype *models.PricetypeModel
+					pricetypeSearchParams := models.PricetypeSearchParams{
+						PricetypeName: curPricetype,
+					}
+					pricetypeLookup, err = pricetypesService.Search(ctx, &pricetypeSearchParams, utilities.NewPaginationQuery(1, 1))
+					if err != nil {
+						log.Fatalf("Error searching pricetypes: %v", err)
+					}
+					if pricetypeLookup.TotalRecords == 0 {
+						log.Printf("Card pricetype %s does not exist - rerun full sync", curPricetype)
+						continue
+					} else {
+						pricetype = &pricetypeLookup.Data[0]
+					}
+					newCard := models.CardModel{
+						CardName:    curCard.Name,
+						CardCode:    curCard.ID,
+						Set:         *set,
+						Supertype:   *supertype,
+						Types:       typesList,
+						Subtypes:    subtypesList,
+						Rarity:      *rarity,
+						MarketPrice: normalPrice,
+						Pricetype:   *pricetype,
+						Image:       curCard.Images.Large,
+					}
+					createdCard, err := cardsService.Create(ctx, &newCard)
+					if err != nil {
+						log.Fatalf("Error creating Card: %v", err)
+					}
+					log.Printf("Created new Card: %s - %s - %s", createdCard.CardCode, curPricetype, createdCard.CardName)
+				}
+			}
+
+			// Holofoil Card
+			if holoFoilPrice != 0.0 {
+				curPricetype = "Holofoil"
+				var cardLookup *models.CardsList
+				cardSearchParams := models.CardSearchParams{
+					CardCode:      curCard.ID,
+					PricetypeName: curPricetype,
+				}
+				cardLookup, err := cardsService.Search(ctx, &cardSearchParams, utilities.NewPaginationQuery(1, 1))
+				if err != nil {
+					log.Fatalf("Error searching card: %v", err)
+				}
+				if cardLookup.TotalRecords == 0 {
+					// If card does not exist, create the card
+					// Get pricetype model from db
+					var pricetypeLookup *models.PricetypesList
+					var pricetype *models.PricetypeModel
+					pricetypeSearchParams := models.PricetypeSearchParams{
+						PricetypeName: curPricetype,
+					}
+					pricetypeLookup, err = pricetypesService.Search(ctx, &pricetypeSearchParams, utilities.NewPaginationQuery(1, 1))
+					if err != nil {
+						log.Fatalf("Error searching pricetypes: %v", err)
+					}
+					if pricetypeLookup.TotalRecords == 0 {
+						log.Printf("Card pricetype %s does not exist - rerun full sync", curPricetype)
+						continue
+					} else {
+						pricetype = &pricetypeLookup.Data[0]
+					}
+					newCard := models.CardModel{
+						CardName:    curCard.Name,
+						CardCode:    curCard.ID,
+						Set:         *set,
+						Supertype:   *supertype,
+						Types:       typesList,
+						Subtypes:    subtypesList,
+						Rarity:      *rarity,
+						MarketPrice: normalPrice,
+						Pricetype:   *pricetype,
+						Image:       curCard.Images.Large,
+					}
+					createdCard, err := cardsService.Create(ctx, &newCard)
+					if err != nil {
+						log.Fatalf("Error creating Card: %v", err)
+					}
+					log.Printf("Created new Card: %s - %s - %s", createdCard.CardCode, curPricetype, createdCard.CardName)
+				}
+			}
+
+			// ReverseHolofoil Card
+			if reverseHolofoilPrice != 0.0 {
+				curPricetype = "ReverseHolofoil"
+				var cardLookup *models.CardsList
+				cardSearchParams := models.CardSearchParams{
+					CardCode:      curCard.ID,
+					PricetypeName: curPricetype,
+				}
+				cardLookup, err := cardsService.Search(ctx, &cardSearchParams, utilities.NewPaginationQuery(1, 1))
+				if err != nil {
+					log.Fatalf("Error searching card: %v", err)
+				}
+				if cardLookup.TotalRecords == 0 {
+					// If card does not exist, create the card
+					// Get pricetype model from db
+					var pricetypeLookup *models.PricetypesList
+					var pricetype *models.PricetypeModel
+					pricetypeSearchParams := models.PricetypeSearchParams{
+						PricetypeName: curPricetype,
+					}
+					pricetypeLookup, err = pricetypesService.Search(ctx, &pricetypeSearchParams, utilities.NewPaginationQuery(1, 1))
+					if err != nil {
+						log.Fatalf("Error searching pricetypes: %v", err)
+					}
+					if pricetypeLookup.TotalRecords == 0 {
+						log.Printf("Card pricetype %s does not exist - rerun full sync", curPricetype)
+						continue
+					} else {
+						pricetype = &pricetypeLookup.Data[0]
+					}
+					newCard := models.CardModel{
+						CardName:    curCard.Name,
+						CardCode:    curCard.ID,
+						Set:         *set,
+						Supertype:   *supertype,
+						Types:       typesList,
+						Subtypes:    subtypesList,
+						Rarity:      *rarity,
+						MarketPrice: normalPrice,
+						Pricetype:   *pricetype,
+						Image:       curCard.Images.Large,
+					}
+					createdCard, err := cardsService.Create(ctx, &newCard)
+					if err != nil {
+						log.Fatalf("Error creating Card: %v", err)
+					}
+					log.Printf("Created new Card: %s - %s - %s", createdCard.CardCode, curPricetype, createdCard.CardName)
+				}
+			}
+		}
+
+		page += 1
+		cards, err = tcgClient.GetCards(request.Page(page))
+		if err != nil {
+			log.Printf("Error getting cards on page: %d", page)
+			log.Fatal(err)
+		}
+	}
+
+	log.Printf("Sync Complete at: %s", time.Now().String())
 }
