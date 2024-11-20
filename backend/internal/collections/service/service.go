@@ -15,7 +15,7 @@ func NewCollectionsService(collectionsRepo collections.Repository) collections.S
 	return &collectionsService{collectionsRepo: collectionsRepo}
 }
 
-func (s *collectionsService) Create(ctx context.Context, newCollection *models.CollectionEntity) (*models.CollectionEntity, error) {
+func (s *collectionsService) Create(ctx context.Context, newCollection *models.CollectionModel) (*models.CollectionModel, error) {
 	return s.collectionsRepo.Create(ctx, newCollection)
 }
 
@@ -27,7 +27,7 @@ func (s *collectionsService) GetAllCollectionsByUserID(ctx context.Context, user
 	return s.collectionsRepo.GetAllCollectionsByUserID(ctx, userID, query)
 }
 
-func (s *collectionsService) Update(ctx context.Context, collectionToUpdate *models.CollectionEntity) (*models.CollectionEntity, error) {
+func (s *collectionsService) Update(ctx context.Context, collectionToUpdate *models.CollectionModel) (*models.CollectionModel, error) {
 	return s.collectionsRepo.Update(ctx, collectionToUpdate)
 }
 
