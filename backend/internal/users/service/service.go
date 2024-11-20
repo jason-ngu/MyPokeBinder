@@ -14,7 +14,7 @@ func NewUsersService(usersRepo users.Repository) users.Service {
 	return &usersService{usersRepo: usersRepo}
 }
 
-func (s *usersService) CreateUser(ctx context.Context, newUser *models.UserEntity) (*models.UserEntity, error) {
+func (s *usersService) CreateUser(ctx context.Context, newUser *models.UserModel) (*models.UserModel, error) {
 	return s.usersRepo.CreateUser(ctx, newUser)
 }
 
