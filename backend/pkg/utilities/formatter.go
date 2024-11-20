@@ -17,17 +17,19 @@ func FormatSqlQueryWithSearchParams(sqlQuery string, searchParams interface{}, a
 	var formattedSqlQuery string
 	var paramFilters []string
 
-	v := reflect.ValueOf(searchParams)
-	for i := 0; i < v.NumField(); i++ {
-		dbTagValue := v.Type().Field(i).Tag.Get("db")
-		fieldValue := v.Field(i).Interface()
+	if searchParams != nil {
+		v := reflect.ValueOf(searchParams)
+		for i := 0; i < v.NumField(); i++ {
+			dbTagValue := v.Type().Field(i).Tag.Get("db")
+			fieldValue := v.Field(i).Interface()
 
-		if fieldValue != "" {
-			paramFilters = append(paramFilters, fmt.Sprintf("%s = :%s", dbTagValue, dbTagValue))
+			if fieldValue != "" {
+				paramFilters = append(paramFilters, fmt.Sprintf("%s = :%s", dbTagValue, dbTagValue))
+			}
 		}
-	}
-	if len(paramFilters) > 0 {
-		formattedSqlQuery += " WHERE " + strings.Join(paramFilters, " AND ")
+		if len(paramFilters) > 0 {
+			formattedSqlQuery += " WHERE " + strings.Join(paramFilters, " AND ")
+		}
 	}
 
 	if addOffsetLimit {

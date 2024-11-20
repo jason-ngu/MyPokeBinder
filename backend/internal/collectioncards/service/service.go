@@ -15,14 +15,14 @@ func NewCollectionCardsService(collectioncardsRepo collectioncards.Repository) c
 	return &collectioncardsService{collectioncardsRepo: collectioncardsRepo}
 }
 
-func (s *collectioncardsService) AddCardsToCollection(ctx context.Context, collectionId int, collectioncardsToAdd []*models.CollectionCardsModel) (*models.CollectionCardsList, error) {
-	return s.collectioncardsRepo.AddCardsToCollection(ctx, collectionId, collectioncardsToAdd)
+func (s *collectioncardsService) AddCardsToCollection(ctx context.Context, collectionID int, collectioncardsToAdd []*models.CollectionCardsModel) (*models.CollectionCardsList, error) {
+	return s.collectioncardsRepo.AddCardsToCollection(ctx, collectionID, collectioncardsToAdd)
 }
 
-func (s *collectioncardsService) GetByCollectionID(ctx context.Context, collectionId int, query *utilities.PaginationQuery) (*models.CollectionCardsList, error) {
-	return s.collectioncardsRepo.GetByCollectionID(ctx, collectionId, query)
+func (s *collectioncardsService) GetByCollectionID(ctx context.Context, collectionID int, query *utilities.PaginationQuery) (*models.CollectionCardsList, error) {
+	return s.collectioncardsRepo.GetByCollectionID(ctx, collectionID, query)
 }
 
-func (s *collectioncardsService) RemoveCardsFromCollection(ctx context.Context, collectionId int, collectioncardsToRemove []*models.CollectionCardsModel) (*models.CollectionCardsList, error) {
-	return s.collectioncardsRepo.RemoveCardsFromCollection(ctx, collectionId, collectioncardsToRemove)
+func (s *collectioncardsService) RemoveCardsFromCollection(ctx context.Context, collectionID int, collectioncardsToRemove []*models.CollectionCardsModel) (*models.CollectionCardsList, error) {
+	return s.collectioncardsRepo.RemoveCardsFromCollection(ctx, collectionID, collectioncardsToRemove)
 }
