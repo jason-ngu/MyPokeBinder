@@ -17,7 +17,7 @@ func NewUsersRepository(db *sqlx.DB) users.Repository {
 	return &usersRepo{db: db}
 }
 
-func (r *usersRepo) CreateUser(ctx context.Context, newUser *models.UserModel) (*models.UserModel, error) {
+func (r *usersRepo) Create(ctx context.Context, newUser *models.UserModel) (*models.UserModel, error) {
 	user := &models.UserEntity{}
 	row := r.db.QueryRowxContext(ctx, createUser, &newUser.Name, &newUser.ProviderKey, &newUser.ProviderType)
 	err := row.StructScan(user)

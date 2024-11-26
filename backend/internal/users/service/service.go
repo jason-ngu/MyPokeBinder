@@ -14,8 +14,8 @@ func NewUsersService(usersRepo users.Repository) users.Service {
 	return &usersService{usersRepo: usersRepo}
 }
 
-func (s *usersService) CreateUser(ctx context.Context, newUser *models.UserModel) (*models.UserModel, error) {
-	return s.usersRepo.CreateUser(ctx, newUser)
+func (s *usersService) Create(ctx context.Context, newUser *models.UserModel) (*models.UserModel, error) {
+	return s.usersRepo.Create(ctx, newUser)
 }
 
 func (s *usersService) GetByID(ctx context.Context, userId int) (*models.UserModel, error) {

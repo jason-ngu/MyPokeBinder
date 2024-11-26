@@ -6,6 +6,6 @@ import (
 )
 
 type Repository interface {
-	CreateUser(ctx context.Context, newUser *models.UserModel) (*models.UserModel, error)
+	Create(ctx context.Context, newUser *models.UserModel) (*models.UserModel, error)
 	GetByID(ctx context.Context, userId int) (*models.UserModel, error)
 }
