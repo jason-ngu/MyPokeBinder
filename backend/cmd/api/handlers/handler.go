@@ -1,31 +1,38 @@
 package handlers
 
 import (
-	"backend/common"
-	internal "backend/internal"
-	"database/sql"
-	"fmt"
+	"backend/config"
+	"backend/pkg/db"
 	"log"
+	"os"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
 type handler struct {
-	ENV    *internal.Env
-	Config common.Configuration
+	Config *config.Config
+	DB     *sqlx.DB
 }
 
-func New() handler {
-	config := common.SetupConfig()
-
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		config.Database.Host, config.Database.Port, config.Database.User, config.Database.Password, config.Database.DatabaseName)
-
-	db, err := sql.Open("postgres", psqlInfo)
+func New() *handler {
+	configFile, err := config.OpenConfig(os.Getenv("config"))
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalf("Could not open config: %v", err)
 	}
-	env := &internal.Env{DB: db}
-	return handler{ENV: env, Config: config}
+
+	config, err := config.ParseConfig(configFile)
+	if err != nil {
+		log.Fatalf("Could not parse config: %v", err)
+	}
+
+	db, err := db.NewPsqlDB(config)
+	if err != nil {
+		log.Fatalf("Could not connect to Datbase: %v", err)
+	}
+
+	return &handler{
+		Config: config,
+		DB:     db,
+	}
 }
