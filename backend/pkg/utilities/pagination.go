@@ -1,6 +1,10 @@
 package utilities
 
-import "math"
+import (
+	"math"
+	"net/http"
+	"strconv"
+)
 
 const defaultSize = 10
 
@@ -39,4 +43,22 @@ func (p *PaginationQuery) GetLimit() int {
 func GetTotalPages(totalCount int, pageSize int) int {
 	d := float64(totalCount) / float64(pageSize)
 	return int(math.Ceil(d))
+}
+
+func GetPaginationFromRequest(r *http.Request) *PaginationQuery {
+	query := r.URL.Query()
+	sizeStr := query.Get("size")
+	size, err := strconv.Atoi(sizeStr)
+	if err != nil {
+		return nil
+	}
+	pageStr := query.Get("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return nil
+	}
+	return &PaginationQuery{
+		Size: size,
+		Page: page,
+	}
 }
