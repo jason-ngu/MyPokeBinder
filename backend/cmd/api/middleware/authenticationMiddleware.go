@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -29,7 +30,7 @@ func GenerateJWTToken(providerKey string) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyJWTToken(next http.HandlerFunc) http.HandlerFunc {
+func VerifyJWTToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authorizationHeader := r.Header.Get("Authorization")
 		tokenString := strings.Replace(authorizationHeader, "Bearer ", "", 1)
@@ -49,11 +50,13 @@ func VerifyJWTToken(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
+		ctx := context.WithValue(r.Context(), "token", token)
+
 		// if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		// 	fmt.Println(claims["foo"], claims["nbf"])
 		// } else {
 		// 	fmt.Println(err)
 		// }
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
