@@ -2,9 +2,6 @@ package handlers
 
 import (
 	"backend/config"
-	services "backend/internal"
-	"backend/internal/models"
-	usersService "backend/internal/services/users"
 	"context"
 	"encoding/json"
 	"log"
@@ -63,16 +60,16 @@ func (h *googleHandler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Req
 		log.Fatal(err)
 	}
 
-	foundUser := models.UserModel{
-		Name:         decodedResp["name"],
-		ProviderKey:  decodedResp["id"],
-		ProviderType: "Google",
-	}
+	// foundUser := models.UserModel{
+	// 	Name:         decodedResp["name"],
+	// 	ProviderKey:  decodedResp["id"],
+	// 	ProviderType: "Google",
+	// }
 
-	_, err = usersService.EnsureUser(&services.Env{}, foundUser)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// _, err = usersService.EnsureUser(&services.Env{}, foundUser)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	// Redirect to user's collections page
 	http.Redirect(w, r, "/collections", http.StatusTemporaryRedirect)
