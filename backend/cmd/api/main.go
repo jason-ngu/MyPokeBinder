@@ -45,26 +45,7 @@ func main() {
 
 	router := chi.NewRouter()
 
-	// Sample
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("root."))
-	})
-	router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("pong"))
-	})
-	router.Get("/panic", func(w http.ResponseWriter, r *http.Request) {
-		panic("test")
-	})
-
-	// Authorization
-	router.Route("/auth", func(router chi.Router) {
-		router.Get("/login/google", googleHandler.GoogleLoginHandler)
-		router.Get("/callback/google", googleHandler.GoogleCallbackHandler)
-	})
-
-	router.Group(func(r chi.Router) {
-		router.Use(middleware.VerifyJWTToken)
-
+	router.With(middleware.VerifyJWTToken).Group(func(r chi.Router) {
 		// Cards
 		router.Route("/cards", func(router chi.Router) {
 			router.With(h.Pagination).Get("/", cardsHandler.Search)
@@ -74,8 +55,8 @@ func main() {
 		// Collections
 		router.Route("/collections", func(r chi.Router) {
 			router.Route("/", func(r chi.Router) {
-				router.Post("", collectionsHandler.Create)
-				router.Put("", collectionsHandler.Update)
+				router.Post("/", collectionsHandler.Create)
+				router.Put("/", collectionsHandler.Update)
 			})
 			router.Route("/{collectionID:[0-9]+}", func(r chi.Router) {
 				router.Get("/", collectionsHandler.GetByID)
@@ -95,29 +76,23 @@ func main() {
 			router.Post("/", usersHandler.Create)
 		})
 	})
-	// Collection Cards Handler
 
-	// User Handler
+	// Sample
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("root."))
+	})
+	router.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("pong"))
+	})
+	router.Get("/panic", func(w http.ResponseWriter, r *http.Request) {
+		panic("test")
+	})
 
-	// router := mux.NewRouter()
-	// // Authorization
-	// router.HandleFunc("/auth/login/google", googleHandler.GoogleLoginHandler).Methods("GET")
-	// router.HandleFunc("/auth/callback/google", googleHandler.GoogleCallbackHandler).Methods("GET")
-	// // Cards Handler
-	// router.HandleFunc("/cards", middleware.VerifyJWTToken(cardsHandler.Search)).Methods("GET")
-	// // Collections Handler
-	// router.HandleFunc("/collections/{collectionId:[0-9]+}", h.GetCollection).Methods("GET")
-	// router.HandleFunc("/collections", h.CreateCollection).Methods("POST")
-	// router.HandleFunc("/collections/{collectionId:[0-9]+}", h.UpdateCollection).Methods("PUT")
-	// router.HandleFunc("/collections/{collectionId:[0-9]+}", h.DeleteCollection).Methods("DELETE")
-	// // Collection Cards Handler
-	// router.HandleFunc("/collections/{collectionId:[0-9]+}/collection-cards", h.GetCollectionCards).Methods("GET")
-	// router.HandleFunc("/collections/{collectionId:[0-9]+}/collection-cards", h.AddCardsToCollection).Methods("PUT")
-	// router.HandleFunc("/collections/{collectionId:[0-9]+}/collection-cards", h.RemoveCardsFromCollection).Methods("DELETE")
-	// // Users Handler
-	// router.HandleFunc("/users/{userId:[0-9]+}", h.GetUser).Methods("GET")
-	// // router.HandleFunc("/users", h.CreateUser).Methods("POST")
-	// router.HandleFunc("/users/{userId:[0-9]+}/collections", h.GetUserCollections).Methods("GET")
+	// Authorization
+	router.Route("/auth", func(router chi.Router) {
+		router.Get("/login/google", googleHandler.GoogleLoginHandler)
+		router.Get("/callback/google", googleHandler.GoogleCallbackHandler)
+	})
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
