@@ -38,3 +38,14 @@ func (r *usersRepo) GetByID(ctx context.Context, userId int) (*models.UserModel,
 
 	return user, nil
 }
+
+func (r *usersRepo) GetByProvider(ctx context.Context, providerType string, providerKey string) (*models.UserModel, error) {
+	user := &models.UserModel{}
+	row := r.db.QueryRowxContext(ctx, getUserByProvider, providerType, providerKey)
+	err := row.StructScan(user)
+	if err != nil {
+		return nil, errors.Wrap(err, "usersRepo.GetByProvider.QueryRowxContext.StructScan")
+	}
+
+	return user, nil
+}

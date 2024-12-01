@@ -25,14 +25,14 @@ func (h *usersHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdUser, err := h.usersService.Create(ctx, &newUser)
+	user, err := h.usersService.EnsureUser(ctx, &newUser)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	json.NewEncoder(w).Encode(createdUser)
+	json.NewEncoder(w).Encode(user)
 }
 
 // func (h *usersHandler) GetByID(w http.ResponseWriter, r *http.Request) {
-
+// 	ctx := r.Context()
 // }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"backend/config"
+	"backend/internal/models"
 	"context"
 	"encoding/json"
 	"log"
@@ -60,11 +61,11 @@ func (h *googleHandler) GoogleCallbackHandler(w http.ResponseWriter, r *http.Req
 		log.Fatal(err)
 	}
 
-	// foundUser := models.UserModel{
-	// 	Name:         decodedResp["name"],
-	// 	ProviderKey:  decodedResp["id"],
-	// 	ProviderType: "Google",
-	// }
+	foundUser := models.UserModel{
+		Name:         decodedResp["name"],
+		ProviderType: "Google",
+		ProviderKey:  decodedResp["id"],
+	}
 
 	// _, err = usersService.EnsureUser(&services.Env{}, foundUser)
 	// if err != nil {

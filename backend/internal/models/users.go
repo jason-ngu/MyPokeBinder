@@ -1,15 +1,15 @@
 package models
 
 type UserEntity struct {
-	UserID       int    `json:"user_id"`
-	Name         string `json:"name"`
-	ProviderKey  string `json:"provider_key"`
-	ProviderType string `json:"provider_type"`
+	UserID       int    `json:"user_id" db:"user_id"`
+	Name         string `json:"name" db:"name"`
+	ProviderType string `json:"provider_type" db:"provider_type"`
+	ProviderKey  string `json:"provider_key" db:"provider_key"`
 }
 
 type UserModel struct {
-	UserID       int
-	Name         string
-	ProviderKey  string
-	ProviderType string
+	UserID       int    `json:"user_id" db:"user_id"`
+	Name         string `json:"name" db:"name"`
+	ProviderType string `json:"provider_type" db:"provider_type"`
+	ProviderKey  string `json:"provider_key" db:"provider_key"`
 }
